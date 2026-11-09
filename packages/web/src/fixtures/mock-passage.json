@@ -10,7 +10,15 @@
       "tokens": [
         { "index": 0, "text": "Arma", "form": "arma", "line": 1 },
         { "index": 1, "text": "virumque", "form": "virum", "line": 1, "enclitics": ["que"] },
-        { "index": 2, "text": "cano", "form": "cano", "line": 1, "punctuation": "," }
+        {
+          "index": 2,
+          "text": "cano",
+          "form": "cano",
+          "line": 1,
+          "punctuation": ",",
+          "selected": 0,
+          "selectedBy": "solver"
+        }
       ],
       "groups": [],
       "order": [
@@ -40,13 +48,17 @@
         { "kind": "agreement", "tokenIndices": [8, 10], "matched": "neut nom pl" },
         { "kind": "subject-verb", "tokenIndices": [9, 10], "matched": "3rd sg verb with neut pl subject" }
       ],
+      "clauses": [
+        { "id": 0, "kind": "main", "tokenIndices": [0, 3, 4, 5, 6, 7, 8, 9, 10] },
+        { "id": 1, "kind": "relative", "tokenIndices": [1, 2] }
+      ],
       "order": [
-        { "order": 1, "label": "subject", "tokenIndices": [1, 2] },
-        { "order": 2, "label": "phrase", "tokenIndices": [3, 4, 0] },
-        { "order": 3, "label": "object", "tokenIndices": [5] },
-        { "order": 4, "label": "phrase", "tokenIndices": [6, 7] },
-        { "order": 5, "label": "object", "tokenIndices": [8, 10] },
-        { "order": 6, "label": "verb", "tokenIndices": [9] }
+        { "order": 1, "label": "subject", "role": "subject", "clauseId": 1, "tokenIndices": [1, 2] },
+        { "order": 2, "label": "phrase", "clauseId": 0, "tokenIndices": [3, 4, 0] },
+        { "order": 3, "label": "object", "clauseId": 0, "tokenIndices": [5] },
+        { "order": 4, "label": "phrase", "clauseId": 0, "tokenIndices": [6, 7] },
+        { "order": 5, "label": "object", "role": "predicate", "clauseId": 0, "tokenIndices": [8, 10] },
+        { "order": 6, "label": "verb", "role": "verb", "clauseId": 0, "tokenIndices": [9] }
       ]
     }
   ],

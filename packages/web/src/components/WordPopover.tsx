@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import type {
   AssistanceLevel,
   Group,
@@ -9,7 +9,7 @@ import type {
 import { AnalysisCard } from './AnalysisCard';
 import { GlossReveal } from './GlossReveal';
 import { groupsForToken } from '../lib/groups';
-import { getToken } from '../lib/model';
+import { getToken, selectedAnalysis } from '../lib/model';
 import { GROUP_KIND_LABELS, toAnalysisView } from '../lib/morphology';
 import { choosePlacement, type Placement } from '../lib/placement';
 import { cls } from '../lib/cls';
@@ -31,11 +31,24 @@ export interface WordPopoverProps {
  * right) near the viewport edges; Escape and blur are handled by the
  * token span itself.
  *
+ * When the corpus disambiguator has chosen a parse (`token.selected`),
+ * that parse is featured at the top with a check marker and the other
+ * parses collapse behind a toggle — still shown, just out of the way.
+ * Unresolved ambiguous forms keep the v1 show-all behavior.
+ *
  * All markup is phrasing content (spans styled as blocks) because the
  * popover lives inside the running text.
  */
 export function WordPopover({ token, tokenIndex, sentence, analyses, level, anchor }: WordPopoverProps) {
   const [placement, setPlacement] = useState<Placement>({ vertical: 'below', horizontal: 'start' });
+  const [showOthers, setShowOthers] = useState(false);
+
+  // The expander always starts collapsed for a fresh popover (the popover
+  // unmounts on close, but reset on token change too so directly-rendered
+  // popovers behave the same when the word switches underneath them).
+  useEffect(() => {
+    setShowOthers(false);
+  }, [token]);
 
   useLayoutEffect(() => {
     if (anchor === null) return;
@@ -58,6 +71,11 @@ export function WordPopover({ token, tokenIndex, sentence, analyses, level, anch
   const groups = groupsForToken(sentence, tokenIndex);
   const total = analyses.length;
   const enclitics = (token.enclitics ?? []).map((enclitic) => `-${enclitic}`).join(' ');
+  const featured = selectedAnalysis(token, analyses);
+  const others =
+    featured === null
+      ? []
+      : analyses.filter((analysis) => analysis !== featured);
 
   return (
     <span
@@ -79,6 +97,43 @@ export function WordPopover({ token, tokenIndex, sentence, analyses, level, anch
 
       {total === 0 ? (
         <span className="word-popover__none">no analysis available</span>
+      ) : featured !== null ? (
+        <>
+          <AnalysisCard
+            key="featured"
+            view={toAnalysisView(featured, level)}
+            featured
+          />
+          {others.length > 0 && (
+            <>
+              <button
+                type="button"
+                className="word-popover__expander"
+                aria-expanded={showOthers}
+                aria-controls="word-popover-others"
+                onClick={() => {
+                  setShowOthers((value) => !value);
+                }}
+              >
+                Other possible parses ({others.length}) {showOthers ? '▾' : '▸'}
+              </button>
+              {showOthers && (
+                <span className="word-popover__others" id="word-popover-others">
+                  {others.map((analysis) => {
+                    const i = analyses.indexOf(analysis);
+                    return (
+                      <AnalysisCard
+                        key={`${analysis.pos}:${analysis.lemma}:${i}`}
+                        view={toAnalysisView(analysis, level)}
+                        ordinal={`${i + 1}/${total}`}
+                      />
+                    );
+                  })}
+                </span>
+              )}
+            </>
+          )}
+        </>
       ) : (
         analyses.map((analysis, i) => (
           <AnalysisCard

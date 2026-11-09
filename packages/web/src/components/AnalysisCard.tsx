@@ -4,16 +4,24 @@ export interface AnalysisCardProps {
   view: AnalysisView;
   /** e.g. "1/2" when a form has several parses */
   ordinal?: string;
+  /** true for the corpus-disambiguated parse — shown with a check marker */
+  featured?: boolean;
 }
 
 /**
  * One parse of a word, already filtered to the current assistance level
  * by `toAnalysisView` — this component only renders what it is given.
  */
-export function AnalysisCard({ view, ordinal }: AnalysisCardProps) {
+export function AnalysisCard({ view, ordinal, featured = false }: AnalysisCardProps) {
   return (
-    <span className="analysis">
+    <span className={featured ? 'analysis analysis--featured' : 'analysis'}>
       <span className="analysis__pos">
+        {featured && (
+          <span className="analysis__check" title="chosen parse" aria-hidden="true">
+            ✓
+          </span>
+        )}
+        {featured && <span className="sr-only">chosen parse — </span>}
         {view.pos}
         {ordinal !== undefined && <span className="analysis__ordinal"> {ordinal}</span>}
       </span>

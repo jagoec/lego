@@ -38,9 +38,10 @@ describe('Reader (verse layout)', () => {
     expect(container.querySelector('.word-popover')).toBeNull();
   });
 
-  it('marks ambiguous words with a dotted style and unanalyzed words differently', () => {
+  it('marks unresolved words with a dotted style and disambiguated ones as normal', () => {
     renderReader();
-    expect(screen.getByText('cano')).toHaveClass('token--ambiguous');
+    // cano is ambiguous in the abstract but has a corpus-chosen parse
+    expect(screen.getByText('cano')).not.toHaveClass('token--ambiguous');
     expect(screen.getByText('troiae')).toHaveClass('token--ambiguous');
     expect(screen.getByText('profugus')).toHaveClass('token--unknown');
     expect(screen.getByText('primus')).not.toHaveClass('token--ambiguous');
@@ -80,37 +81,47 @@ describe('group highlighting', () => {
 });
 
 describe('popover content per assistance level', () => {
-  it('level 1: part of speech only — all parses, no lemma, no morphology, no gloss', () => {
+  it('level 1: part of speech only — unresolved parses all shown, no lemma or morphology', () => {
     renderReader(1);
-    fireEvent.mouseEnter(screen.getByText('cano'));
+    fireEvent.mouseEnter(screen.getByText('troiae'));
 
-    // both parses of the ambiguous form
-    expect(screen.getByText('verb')).toBeInTheDocument();
-    expect(screen.getByText('adjective')).toBeInTheDocument();
+    // both parses of the unresolved ambiguous form
+    expect(screen.getAllByText('name')).toHaveLength(2);
     expect(screen.getByText('2 analyses')).toBeInTheDocument();
     // nothing beyond the POS
-    expect(screen.queryByText('canus')).not.toBeInTheDocument();
-    expect(screen.queryByText('1st sg pres ind active')).not.toBeInTheDocument();
+    expect(screen.queryByText('Troia')).not.toBeInTheDocument();
+    expect(screen.queryByText('fem gen/dat sg')).not.toBeInTheDocument();
     expect(screen.queryByText('lemma')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Reveal English gloss' })).not.toBeInTheDocument();
   });
 
-  it('level 2: adds full morphology and the lemma, but no stem yet', () => {
-    renderReader(2);
+  it('level 1: a disambiguated word features one parse with the others collapsed', () => {
+    renderReader(1);
     fireEvent.mouseEnter(screen.getByText('cano'));
 
-    expect(screen.getByText('1st sg pres ind active')).toBeInTheDocument();
-    expect(screen.getByText('masc/neut abl sg positive')).toBeInTheDocument();
-    expect(screen.getByText('canus')).toBeInTheDocument();
-    expect(screen.queryByText(/conj1/)).not.toBeInTheDocument();
+    expect(screen.getByText('verb')).toBeInTheDocument();
+    expect(screen.queryByText('adjective')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Other possible parses \(1\)/ })).toBeInTheDocument();
+  });
+
+  it('level 2: adds full morphology and the lemma, but no stem yet', () => {
+    renderReader(2);
+    fireEvent.mouseEnter(screen.getByText('troiae'));
+
+    expect(screen.getByText('fem gen/dat sg')).toBeInTheDocument();
+    expect(screen.getByText('fem nom/voc pl')).toBeInTheDocument();
+    expect(screen.getAllByText('Troia')).toHaveLength(2);
+    expect(screen.queryByText(/a_ae/)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Reveal English gloss' })).not.toBeInTheDocument();
   });
 
-  it('level 3: adds the dictionary pattern (raw stem + friendly label)', () => {
+  it('level 3: adds the dictionary pattern (raw stem + friendly label) to the featured parse', () => {
     renderReader(3);
     fireEvent.mouseEnter(screen.getByText('cano'));
 
     expect(screen.getByText(/1st conjugation — conj1,are_vb/)).toBeInTheDocument();
+    // the adjective parse's stem is behind the expander
+    fireEvent.click(screen.getByRole('button', { name: /Other possible parses/ }));
     expect(screen.getByText(/us_a_um/)).toBeInTheDocument();
   });
 

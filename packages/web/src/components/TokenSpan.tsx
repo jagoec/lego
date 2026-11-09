@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import type { AssistanceLevel, MorpheusAnalysis, Sentence, Token } from '@lego/shared';
 import { WordPopover } from './WordPopover';
+import { selectedAnalysis } from '../lib/model';
 import { cls } from '../lib/cls';
 
 export interface TokenSpanProps {
@@ -37,8 +38,15 @@ export function TokenSpan({
 }: TokenSpanProps) {
   const wrapRef = useRef<HTMLSpanElement | null>(null);
 
-  const variety =
-    analyses.length > 1 ? 'token--ambiguous' : analyses.length === 0 ? 'token--unknown' : '';
+  // "Ambiguous" means *unresolved* ambiguity: several parses and no
+  // corpus-chosen one. A word whose parse was disambiguated reads as a
+  // normal word (the chosen parse still tops its popover).
+  const unresolved = analyses.length > 1 && selectedAnalysis(token, analyses) === null;
+  const variety = unresolved
+    ? 'token--ambiguous'
+    : analyses.length === 0
+      ? 'token--unknown'
+      : '';
 
   return (
     <span className="token-unit">

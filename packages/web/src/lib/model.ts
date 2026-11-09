@@ -1,4 +1,4 @@
-import type { Passage, Sentence, Token } from '@lego/shared';
+import type { MorpheusAnalysis, Passage, Sentence, Token } from '@lego/shared';
 
 /** Identifies one token in the passage (tokens are indexed per sentence). */
 export interface TokenKey {
@@ -66,4 +66,31 @@ export function lineRangeLabel(sentence: Sentence): string {
 /** Analyses for a token, from the passage's shared form→analyses map. */
 export function analysesForToken(passage: Passage, token: Token) {
   return passage.analyses[token.form] ?? [];
+}
+
+/**
+ * The contextually correct parse of an ambiguous form, as chosen by the
+ * corpus disambiguator (`token.selected`). Null when the token has no
+ * usable selection — no selection at all, a single parse (nothing to
+ * disambiguate), or an out-of-range index from hand-edited data.
+ */
+export function selectedAnalysis(
+  token: Token,
+  analyses: MorpheusAnalysis[],
+): MorpheusAnalysis | null {
+  if (analyses.length <= 1 || token.selected === undefined) return null;
+  return analyses[token.selected] ?? null;
+}
+
+/**
+ * The parse the UI should treat as *the* parse of the word: the selected
+ * one when present, otherwise the first analysis (v1 show-all behavior
+ * still lists every parse; this is the one that gets top billing, drives
+ * the ambiguous styling, and feeds the paradigm panel).
+ */
+export function chosenAnalysis(
+  token: Token,
+  analyses: MorpheusAnalysis[],
+): MorpheusAnalysis | undefined {
+  return selectedAnalysis(token, analyses) ?? analyses[0];
 }
