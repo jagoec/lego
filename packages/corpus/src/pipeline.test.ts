@@ -72,12 +72,16 @@ describe('buildPassage — offline end-to-end over real fixture lines', () => {
     expect(s1[16]).toEqual({ index: 16, text: 'atque', form: 'at', line: 7, enclitics: ['que'] });
     // quoque is stoplisted (lexicalized adverb): analyzed whole
     expect(s1[1]).toEqual({ index: 1, text: 'quoque', form: 'quoque', line: 5 });
+    // the solver may stamp selected/selectedBy on ambiguous tokens
+    // (navibus ↔ amissis abl pl fem): parse 0 is the abl pl reading
+    const l251 = passage.sentences[2]?.tokens ?? [];
+    expect(l251[0]).toMatchObject({ text: 'navibus', selected: 0, selectedBy: 'solver' });
   });
 
   it('attaches the parenthetical punctuation without breaking the sentence', () => {
     const l251 = passage.sentences[2]?.tokens ?? [];
-    expect(l251[0]).toEqual({ index: 0, text: 'navibus', form: 'navibus', line: 251, punctuation: '(' });
-    expect(l251[1]).toEqual({ index: 1, text: 'infandum', form: 'infandum', line: 251, punctuation: '!)' });
+    expect(l251[0]).toMatchObject({ index: 0, text: 'navibus', form: 'navibus', line: 251, punctuation: '(' });
+    expect(l251[1]).toMatchObject({ index: 1, text: 'infandum', form: 'infandum', line: 251, punctuation: '!)' });
     expect(l251).toHaveLength(12); // six words per line, one token each
   });
 
@@ -130,15 +134,84 @@ describe('buildPassage — offline end-to-end over real fixture lines', () => {
     expect(pairs2.some((pair) => pair[1] === '3-11')).toBe(false); // unius ↔ oris too far
   });
 
-  it('chunks sentence 1 beginning as run / verb / subject / phrase', () => {
+  it('splits the reading order at clause boundaries and stamps clauseId/role', () => {
+    // sentence 1 (l.1–4): the relative clause "qui primus ab oris
+    // Italiam fato profugus Laviniaque venit" (tokens 4–12) interrupts
+    // the main clause; chunks are split there and renumbered
     const order = passage.sentences[0]?.order ?? [];
-    expect(order.slice(0, 4).map((chunk) => [chunk.label, chunk.tokenIndices[0]])).toEqual([
-      [undefined, 0], // Arma virum — Arma's imperative parse must not trigger a verb chunk
-      ['verb', 2], // cano
-      ['subject', 3], // Troiae qui primus (qui is unambiguous nominative)
-      ['phrase', 6], // ab oris … (absorbs until the next trigger)
+    expect(order.slice(0, 6).map((chunk) => [chunk.label, chunk.role, chunk.tokenIndices[0], chunk.clauseId])).toEqual([
+      [undefined, 'predicate', 0, 0], // Arma virum
+      ['verb', 'verb', 2, 0], // cano
+      [undefined, 'predicate', 3, 0], // Troiae — split off the relative clause, 'subject' label not re-earned
+      ['subject', undefined, 4, 1], // qui primus — subordinate: label kept, role unset
+      ['phrase', undefined, 6, 1], // ab oris … (inside the relative clause)
+      ['verb', undefined, 12, 1], // venit — the relative clause's verb
+    ]);
+    expect(passage.sentences[0]?.clauses).toEqual([
+      { id: 0, kind: 'main', tokenIndices: [0, 1, 2, 3, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27] },
+      { id: 1, kind: 'relative', tokenIndices: [4, 5, 6, 7, 8, 9, 10, 11, 12] },
     ]);
     // every token covered exactly once is already asserted by validation
+  });
+
+  it('detects the dum-clause with the -que coordinated verb and the ablative absolute', () => {
+    // sentence 2 (l.5–7): "dum conderet urbem inferretque deos" is one
+    // adverbial clause — inferret-que extends it past conderet
+    expect(passage.sentences[1]?.clauses).toEqual([
+      {
+        id: 0,
+        kind: 'main',
+        tokenIndices: [0, 1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+      },
+      { id: 1, kind: 'adverbial', tokenIndices: [5, 6, 7, 8] },
+    ]);
+
+    // sentence 3 (l.251–252): "navibus infandum amissis" is an ablative
+    // absolute (participial clause), the rest is main
+    expect(passage.sentences[2]?.clauses).toEqual([
+      { id: 0, kind: 'main', tokenIndices: [3, 4, 5, 6, 7, 8, 9, 10, 11] },
+      { id: 1, kind: 'participial', tokenIndices: [0, 1, 2] },
+    ]);
+  });
+
+  it('disambiguates what the evidence supports and leaves the rest open', () => {
+    const s0 = passage.sentences[0]?.tokens ?? [];
+    // cano (verb 1st sg + noun parses) is a noun-like collision: no
+    // solver elimination, no selection without translation evidence
+    expect(s0[2]).toMatchObject({ text: 'cano' });
+    expect(s0[2]?.selected).toBeUndefined();
+    // memorem ↔ iram (acc sg fem): the acc reading is selected
+    expect(s0[24]).toMatchObject({ text: 'memorem', selected: 0, selectedBy: 'solver' });
+    // navibus ↔ amissis (abl pl fem): abl pl selected on both sides
+    const l251 = passage.sentences[2]?.tokens ?? [];
+    expect(l251[0]).toMatchObject({ text: 'navibus', selected: 0, selectedBy: 'solver' });
+    expect(l251[2]).toMatchObject({ text: 'amissis', selected: 1, selectedBy: 'solver' });
+    // stats agree
+    expect(result.stats).toMatchObject({
+      ambiguousTokens: 34,
+      selectedBySolver: 5,
+      selectedByTranslation: 0,
+      subordinateClauses: 3,
+      sentencesWithSubordinateClauses: 3,
+    });
+  });
+
+  it('uses the aligned translation as a tiebreaker (cano → 1st sg via "I sing")', async () => {
+    const { passage: withTranslation } = await buildPassage({
+      lines,
+      source: { name: 'test', url: 'test', license: 'test' },
+      fetchRaw: fixtureFetch,
+      cache: { ...RESPONSES },
+      translations: [
+        'Arms and the man I sing, who first made way, predestined exile, from the Trojan shore to Italy, the blest Lavinian strand.',
+        null,
+        null,
+      ],
+    });
+    const cano = withTranslation.sentences[0]?.tokens[2];
+    expect(cano).toMatchObject({ text: 'cano', selected: 0, selectedBy: 'translation' });
+    // solver selections are not overturned: memorem stays the solver's
+    expect(withTranslation.sentences[0]?.tokens[24]).toMatchObject({ selectedBy: 'solver' });
   });
 
   it('reports stats and fills the raw cache for every queried form', () => {

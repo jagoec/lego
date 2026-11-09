@@ -32,9 +32,16 @@
  *    from the ego/nos/tu/vos lexicon, so it constrains only the verb.
  * 3. **Finite-verb anchoring**: a token with a finite-verb role (the
  *    reading-order `verb` chunk anchor per `hasFiniteVerbRole`) must be
- *    read as a finite verb — noun / infinitive / participle readings of
- *    that form are eliminated. (The `Arma` = noun + imperative-of-armo
- *    collision is safe: such tokens never get the finite-verb role.)
+ *    read as a finite verb — its infinitive / participle readings are
+ *    eliminated — but ONLY when the form has no noun-like parses
+ *    (noun / pronoun / name / adjective; participles do not count).
+ *    Forms that collide a rare indicative with nominal parses
+ *    (morpheus reads `bello` as both the ablative of bellum and the
+ *    1st sg of bellāre, `alto` as ablative of altum and 1st sg of
+ *    altāre) are exactly the solver-undecidable cases the translation
+ *    tiebreaker exists for ("cano" beside its noun parses is settled by
+ *    "I sing"). The `Arma` = noun + imperative-of-armo collision is
+ *    safe: such tokens never get the finite-verb role.
  *
  * When eliminations would remove every parse of a token (contradictory
  * evidence), the eliminations are discarded for that token — the
@@ -236,12 +243,17 @@ export function solveSentence(
     if (!sol.eliminated.includes(parseIndex)) sol.eliminated.push(parseIndex);
   };
 
-  // 1. Finite-verb anchoring: a verb-anchor token must read as finite.
+  // 1. Finite-verb anchoring: a verb-anchor token must read as finite —
+  //    but only when the form has no noun-like parses (see module doc).
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i];
     if (token === undefined || solution[i] === undefined) continue;
     const tokenAnalyses = analysesOf(analyses, token);
     if (!hasFiniteVerbRole(tokenAnalyses)) continue;
+    const nounLike = tokenAnalyses.some(
+      (parse) => isNominal(parse) || parse.pos === 'adjective',
+    );
+    if (nounLike) continue;
     tokenAnalyses.forEach((parse, k) => {
       if (!isFiniteAnalysis(parse)) eliminate(i, k);
     });
@@ -292,13 +304,14 @@ export function solveSentence(
       }
     });
 
-    // subject side: nominal, nominative, of the matched number
-    // (1st/2nd-person links come from the pronoun lexicon; the pronoun
-    // form itself is usually unambiguous, so this mainly disciplines
-    // 3rd-person subjects)
+    // subject side: nominal or adjectival (participles make perfectly
+    // good subjects — "passus" is the participle, not the noun),
+    // nominative, of the matched number. 1st/2nd-person links come from
+    // the pronoun lexicon; the pronoun form itself is usually
+    // unambiguous, so this mainly disciplines 3rd-person subjects.
     const subject = tokens[subjectIndex]!;
     analysesOf(analyses, subject).forEach((parse, k) => {
-      if (!isNominal(parse)) {
+      if (!(isNominal(parse) || isAdjectival(parse))) {
         eliminate(subjectIndex, k);
         return;
       }

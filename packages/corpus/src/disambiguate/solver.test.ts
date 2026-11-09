@@ -53,6 +53,21 @@ describe('solveSentence — finite-verb anchoring', () => {
     expect(solution[0]).toMatchObject({ eliminated: [] });
     expect(solution[0]?.selected).toBeUndefined();
   });
+
+  it('does not eliminate noun parses of noun+rare-indicative collisions (bello, alto)', () => {
+    // "et bello passus" — bello is the ablative of bellum, not "I fight";
+    // the noun-like parses keep the solver out, translation may decide
+    const analyses = mapOf([
+      ['bello', [
+        analysis('verb', { mood: 'ind', tense: 'pres', voice: 'active', persons: ['1st'], numbers: ['sg'] }),
+        analysis('noun', { cases: ['abl'], numbers: ['sg'], genders: ['neut'] }),
+        analysis('noun', { cases: ['dat'], numbers: ['sg'], genders: ['masc'] }),
+      ]],
+    ]);
+    const solution = solve(['bello'], analyses);
+    expect(solution[0]).toMatchObject({ eliminated: [] });
+    expect(solution[0]?.selected).toBeUndefined();
+  });
 });
 
 describe('solveSentence — agreement links', () => {
@@ -126,6 +141,23 @@ describe('solveSentence — subject-verb links', () => {
     const groups: Group[] = [{ kind: 'subject-verb', tokenIndices: [0, 1], matched: '3rd sg' }];
     const solution = solve(['puella', 'venit'], analyses, groups);
     expect(solution[0]).toMatchObject({ eliminated: [1], selected: 0 });
+  });
+
+  it('admits participial subject parses (passus the participle, not the noun)', () => {
+    // passus as subject of conderet: both the noun nom sg and the
+    // participle nom sg survive → no unique winner → undecided
+    const analyses = mapOf([
+      ['passus', [
+        analysis('noun', { cases: ['acc'], numbers: ['pl'], genders: ['masc'] }),
+        analysis('noun', { cases: ['nom'], numbers: ['sg'], genders: ['masc'] }),
+        analysis('verb', { mood: 'part', tense: 'perf', voice: 'passive', cases: ['nom'], numbers: ['sg'], genders: ['masc'] }),
+      ]],
+      ['conderet', [analysis('verb', { mood: 'subj', tense: 'imperf', voice: 'active', persons: ['3rd'], numbers: ['sg'] })]],
+    ]);
+    const groups: Group[] = [{ kind: 'subject-verb', tokenIndices: [0, 1], matched: '3rd sg' }];
+    const solution = solve(['passus', 'conderet'], analyses, groups);
+    expect(solution[0]?.eliminated).toEqual([0]); // only the acc pl noun falls
+    expect(solution[0]?.selected).toBeUndefined(); // nom sg noun vs participle: no winner
   });
 
   it('skips groups whose sides cannot be told apart', () => {

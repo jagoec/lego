@@ -29,10 +29,13 @@
  * - **ablative absolute** (kind 'participial'): frequent in Vergil — a
  *   participle with an ablative parse preceded (within
  *   {@link ABL_ABS_WINDOW} tokens, no verb anchor between) by a
- *   noun/pronoun/name with an ablative parse. The clause spans that
- *   noun through the participle. ("plain participial phrases when
- *   confident" are left for a later pass — ablative absolutes are the
- *   confident shape.)
+ *   noun/pronoun/name with an ablative parse, with no accusative-capable
+ *   nominal and no conjunction strictly between the two (guards against
+ *   the false positives "ab oris Italiam fato" — an accusative between —
+ *   and "terris iactatus et alto" — a conjunction between). The clause
+ *   spans that noun through the participle. ("plain participial phrases
+ *   when confident" are left for a later pass — ablative absolutes are
+ *   the confident shape.)
  * - **accusative + infinitive** (kind 'completive'): an infinitive whose
  *   nearest preceding token within {@link ACI_WINDOW} is an
  *   accusative-capable nominal (or participle), with no verb anchor
@@ -42,13 +45,17 @@
  *
  * ## Coordination (documented rule)
  *
- * A verb anchor coordinated with the previous verb anchor by `et` /
- * `-que` / `at(que)` / `ac` (its own enclitic, or a coordinating token
- * immediately before it) JOINS the previous anchor's clause, extending
- * that clause's span through itself. A coordinated verb in the main
- * clause therefore stays in the main clause — the heuristic never emits
- * kind 'coordinated' (it is reserved for manual overrides); two
- * coordinated main verbs share the main clause by design.
+ * A verb anchor whose OWN token carries the `-que` enclitic
+ * (inferret-que) is coordinated with the previous verb anchor: it joins
+ * that anchor's clause, extending the clause's span through itself. A
+ * coordinated verb in the main clause therefore stays in the main
+ * clause — the heuristic never emits kind 'coordinated' (it is reserved
+ * for manual overrides); two coordinated main verbs share the main
+ * clause by design. Coordination by a preceding `et`/`at(que)` token is
+ * deliberately NOT used: `et` usually coordinates nominals
+ * ("multum ille et terris iactatus et alto"), and combined with a
+ * spurious verb anchor it extends clauses wrongly; a `-que` fused to
+ * the coordinated verb itself is the reliable signal in Vergil.
  *
  * ## Overlap resolution
  *
@@ -89,9 +96,6 @@ export const ABL_ABS_WINDOW = 3;
 
 /** How far back an AcI's accusative subject may sit from its infinitive. */
 export const ACI_WINDOW = 5;
-
-/** Tokens that coordinate a verb with the previous verb. */
-const COORDINATORS: ReadonlySet<string> = new Set(['et', 'at', 'atque', 'ac']);
 
 interface ClauseSpan {
   start: number;
@@ -181,11 +185,20 @@ export function detectClauseSpans(
       continue;
     }
 
-    // ablative absolute: ablative participle + preceding ablative nominal
+    // ablative absolute: ablative participle + preceding ablative nominal,
+    // with no accusative nominal and no conjunction strictly between
     if (tokenAnalyses.some((parse) => isParticiple(parse) && parse.cases?.includes('abl'))) {
       for (let j = i - 1; j >= i - ABL_ABS_WINDOW && j >= 0; j--) {
         if (isAnchor(j)) break; // a verb between noun and participle blocks it
         const other = tokens[j]!;
+        const between = tokens.slice(j + 1, i);
+        const accBetween = between.some((t) =>
+          caseCapable(analysesOf(analyses, t), (p) => isNominal(p) || isParticiple(p), 'acc'),
+        );
+        const conjBetween = between.some((t) =>
+          analysesOf(analyses, t).some((parse) => parse.pos === 'conjunction'),
+        );
+        if (accBetween || conjBetween) break;
         if (caseCapable(analysesOf(analyses, other), isNominal, 'abl')) {
           spans.push({ start: j, end: i, kind: 'participial' });
           break;
@@ -208,20 +221,14 @@ export function detectClauseSpans(
     }
   }
 
-  // Coordination: a verb anchor linked by et/-que/at(que)/ac to the
-  // previous anchor joins that anchor's clause (extending its span).
+  // Coordination: a verb anchor carrying its own -que enclitic joins
+  // the previous anchor's clause (extending its span). See module doc.
   for (let k = 1; k < anchors.length; k++) {
     const v = anchors[k]!;
     const verb = tokens[v]!;
     const previous = tokens[anchors[k - 1]!];
     if (previous === undefined) continue;
-    const before = v > 0 ? tokens[v - 1] : undefined;
-    const coordinated =
-      verb.enclitics?.includes('que') === true ||
-      before !== undefined &&
-        (COORDINATORS.has(before.form.toLowerCase()) ||
-          before.enclitics?.includes('que') === true);
-    if (!coordinated) continue;
+    if (verb.enclitics?.includes('que') !== true) continue;
     const span = spans.find((span) => span.end === anchors[k - 1]);
     if (span !== undefined) span.end = v;
   }

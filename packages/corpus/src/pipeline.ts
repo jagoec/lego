@@ -1,9 +1,19 @@
 /**
  * The import pipeline: TEI lines → words → sentences → analyses →
- * groups + reading order → `Passage`.
+ * groups + reading order → disambiguation + clauses → `Passage`.
  *
  * Pure orchestration — all I/O (file reads, HTTP) is injected, so the
  * whole pipeline is testable without network (`fetchRaw` fixture maps).
+ *
+ * Per sentence, after the v1 groups and reading order:
+ * 1. the constraint solver picks contextually correct parses
+ *    (`Token.selected` + `selectedBy: 'solver'`, see disambiguate/);
+ * 2. the aligned English translation (when provided via
+ *    `options.translations`) breaks remaining ties
+ *    (`selectedBy: 'translation'`);
+ * 3. clause segmentation splits the chunks at clause boundaries and
+ *    stamps `Chunk.clauseId` / `Chunk.role` and `Sentence.clauses`
+ *    (see clauses.ts).
  *
  * Analysis results are keyed by the EXACT queried form, with a
  * case-fallback: morpheus is case-sensitive in BOTH directions — some
@@ -20,8 +30,11 @@ import { parseMorpheus } from '@lego/shared';
 import type { MorpheusAnalysis, Passage, PassageSource, Sentence, Token } from '@lego/shared';
 import { analyzeForms } from './analyze.js';
 import type { RawFetch } from './analyze.js';
+import { buildClauses } from './clauses.js';
 import { buildGroups } from './groups.js';
 import { buildOrder } from './order.js';
+import { solveSentence } from './disambiguate/solver.js';
+import { applyTranslationEvidence, extractSignals } from './disambiguate/translation.js';
 import { segmentSentences } from './sentences.js';
 import type { TeiLine } from './tei.js';
 import { candidateForms, extractWords, toToken } from './tokenize.js';
@@ -35,6 +48,14 @@ export interface BuildOptions {
   fetchRaw: RawFetch;
   /** form → raw morpheus body; updated in place with newly fetched forms */
   cache: Record<string, string>;
+  /** book number for the passage metadata (default 1) */
+  book?: number;
+  /**
+   * Aligned English translation text per sentence (null = unalignable),
+   * as produced by the alignment module — enables the translation
+   * tiebreaker pass. Absent = solver-only disambiguation.
+   */
+  translations?: readonly (string | null)[];
   onProgress?: (done: number, total: number) => void;
 }
 
@@ -54,6 +75,13 @@ export interface BuildResult {
     agreementGroups: number;
     subjectVerbGroups: number;
     encliticSplits: number;
+    // disambiguation (v2)
+    ambiguousTokens: number;
+    selectedBySolver: number;
+    selectedByTranslation: number;
+    // clause structure (v2)
+    subordinateClauses: number;
+    sentencesWithSubordinateClauses: number;
   };
 }
 
@@ -116,8 +144,36 @@ export async function buildPassage(options: BuildOptions): Promise<BuildResult> 
       if (token.enclitics !== undefined) encliticSplits += 1;
       return token;
     });
-    const groups = buildGroups(tokens, analysesForTokens(tokens, rawAnalyses));
-    const order = buildOrder(tokens, analysesForTokens(tokens, rawAnalyses));
+    const tokenAnalyses = analysesForTokens(tokens, rawAnalyses);
+    const groups = buildGroups(tokens, tokenAnalyses);
+    const readingOrder = buildOrder(tokens, tokenAnalyses);
+
+    // Disambiguation (Task A): the constraint solver scores every
+    // ambiguous token; its selections land as selectedBy 'solver'. The
+    // translation tiebreaker (selectedBy 'translation') may then decide
+    // only the tokens the solver left open, when an aligned English
+    // sentence is available.
+    const solution = solveSentence(tokens, tokenAnalyses, groups, readingOrder);
+    for (let i = 0; i < tokens.length; i++) {
+      const selected = solution[i]?.selected;
+      if (selected !== undefined) {
+        tokens[i]!.selected = selected;
+        tokens[i]!.selectedBy = 'solver';
+      }
+    }
+    const english = options.translations?.[raw.index];
+    if (english !== undefined && english !== null) {
+      const picks = applyTranslationEvidence(tokens, tokenAnalyses, solution, extractSignals(english));
+      for (const [tokenIndex, parseIndex] of picks) {
+        tokens[tokenIndex]!.selected = parseIndex;
+        tokens[tokenIndex]!.selectedBy = 'translation';
+      }
+    }
+
+    // Clause structure (Task B): chunks are split at clause boundaries
+    // and upgraded with clauseId + role.
+    const { clauses, order } = buildClauses(tokens, tokenAnalyses, readingOrder);
+
     sentences.push({
       index: raw.index,
       lineStart: raw.lineStart,
@@ -125,6 +181,7 @@ export async function buildPassage(options: BuildOptions): Promise<BuildResult> 
       tokens,
       groups,
       order,
+      clauses,
     });
   }
 
@@ -141,7 +198,7 @@ export async function buildPassage(options: BuildOptions): Promise<BuildResult> 
 
   const passage: Passage = {
     work: 'Vergil',
-    book: 1,
+    book: options.book ?? 1,
     title: 'Aeneid',
     sentences,
     analyses,
@@ -184,6 +241,30 @@ function computeStats(
     else if (analyses.length > 1) ambiguous += 1;
   }
   const groups = passage.sentences.flatMap((sentence) => sentence.groups);
+
+  // disambiguation: token instances with multiple analyses and how many
+  // got a selected parse, by provenance
+  let ambiguousTokens = 0;
+  let selectedBySolver = 0;
+  let selectedByTranslation = 0;
+  for (const sentence of passage.sentences) {
+    for (const token of sentence.tokens) {
+      if ((passage.analyses[token.form] ?? []).length < 2) continue;
+      ambiguousTokens += 1;
+      if (token.selectedBy === 'solver') selectedBySolver += 1;
+      else if (token.selectedBy === 'translation') selectedByTranslation += 1;
+    }
+  }
+
+  // clause structure: subordinate clauses and sentence coverage
+  let subordinateClauses = 0;
+  let sentencesWithSubordinateClauses = 0;
+  for (const sentence of passage.sentences) {
+    const subordinates = sentence.clauses?.filter((clause) => clause.id !== 0).length ?? 0;
+    subordinateClauses += subordinates;
+    if (subordinates > 0) sentencesWithSubordinateClauses += 1;
+  }
+
   return {
     lines: Math.max(...passage.sentences.map((sentence) => sentence.lineEnd), 0),
     sentences: sentenceCount,
@@ -196,5 +277,10 @@ function computeStats(
     agreementGroups: groups.filter((group) => group.kind === 'agreement').length,
     subjectVerbGroups: groups.filter((group) => group.kind === 'subject-verb').length,
     encliticSplits,
+    ambiguousTokens,
+    selectedBySolver,
+    selectedByTranslation,
+    subordinateClauses,
+    sentencesWithSubordinateClauses,
   };
 }

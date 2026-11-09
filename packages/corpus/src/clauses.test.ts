@@ -177,6 +177,33 @@ describe('detectClauseSpans — participial (ablative absolute)', () => {
     ]);
     expect(detectClauseSpans(tokens, analyses)).toEqual([]);
   });
+
+  it('does not fire when an accusative nominal lies between (oris Italiam fato)', () => {
+    const tokens = [token('oris', 0), token('Italiam', 1), token('fato', 2)];
+    const analyses = mapOf([
+      ['oris', [analysis('noun', { cases: ['abl'], numbers: ['pl'], genders: ['fem'] })]],
+      ['Italiam', [analysis('name', { cases: ['acc'], numbers: ['sg'], genders: ['fem'] })]],
+      ['fato', [
+        analysis('noun', { cases: ['abl'], numbers: ['sg'], genders: ['neut'] }),
+        analysis('verb', { mood: 'part', tense: 'perf', voice: 'passive', cases: ['abl'], numbers: ['sg'], genders: ['masc'] }),
+      ]],
+    ]);
+    expect(detectClauseSpans(tokens, analyses)).toEqual([]);
+  });
+
+  it('does not fire when a conjunction lies between (terris iactatus et alto)', () => {
+    const tokens = [token('terris', 0), token('iactatus', 1), token('et', 2), token('alto', 3)];
+    const analyses = mapOf([
+      ['terris', [analysis('noun', { cases: ['abl'], numbers: ['pl'], genders: ['fem'] })]],
+      ['iactatus', [analysis('verb', { mood: 'part', tense: 'perf', voice: 'passive', cases: ['nom'], numbers: ['sg'], genders: ['masc'] })]],
+      ['et', [analysis('conjunction')]],
+      ['alto', [
+        analysis('noun', { cases: ['abl'], numbers: ['sg'], genders: ['neut'] }),
+        analysis('verb', { mood: 'part', tense: 'perf', voice: 'passive', cases: ['abl'], numbers: ['sg'], genders: ['neut'] }),
+      ]],
+    ]);
+    expect(detectClauseSpans(tokens, analyses)).toEqual([]);
+  });
 });
 
 describe('detectClauseSpans — accusative + infinitive', () => {
@@ -228,7 +255,9 @@ describe('detectClauseSpans — coordination', () => {
     expect(detectClauseSpans(tokens, analyses)).toEqual([{ start: 1, end: 4, kind: 'adverbial' }]);
   });
 
-  it('an et before the verb coordinates it with the previous anchor', () => {
+  it('a preceding et does NOT coordinate (nominal et…et would extend clauses wrongly)', () => {
+    // "cum maneret et taceret" — et before a real verb: the et rule is
+    // deliberately not used; only the verb's own -que coordinates
     const tokens = [token('cum', 0), token('maneret', 1), token('et', 2), token('taceret', 3), token('abiit', 4)];
     const subj = (): MorpheusAnalysis[] => [
       analysis('verb', { mood: 'subj', tense: 'imperf', voice: 'active', persons: ['3rd'], numbers: ['sg'] }),
@@ -240,7 +269,9 @@ describe('detectClauseSpans — coordination', () => {
       ['taceret', subj()],
       ['abiit', [analysis('verb', { mood: 'ind', tense: 'pres', voice: 'active', persons: ['3rd'], numbers: ['sg'] })]],
     ]);
-    expect(detectClauseSpans(tokens, analyses)).toEqual([{ start: 0, end: 3, kind: 'adverbial' }]);
+    // cum-clause ends at maneret; taceret opens no clause of its own
+    // (it is an anchor, not a trigger) and stays main
+    expect(detectClauseSpans(tokens, analyses)).toEqual([{ start: 0, end: 1, kind: 'adverbial' }]);
   });
 });
 
