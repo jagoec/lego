@@ -1,0 +1,225 @@
+{
+  "work": "Aeneis",
+  "book": 1,
+  "title": "Aeneid, Book 1",
+  "sentences": [
+    {
+      "index": 0,
+      "lineStart": 1,
+      "lineEnd": 1,
+      "tokens": [
+        { "index": 0, "text": "Arma", "form": "arma", "line": 1 },
+        { "index": 1, "text": "virumque", "form": "virum", "line": 1, "enclitics": ["que"] },
+        { "index": 2, "text": "cano", "form": "cano", "line": 1, "punctuation": "," }
+      ],
+      "groups": [],
+      "order": [
+        { "order": 1, "label": "object", "tokenIndices": [0, 1] },
+        { "order": 2, "label": "verb", "tokenIndices": [2] }
+      ]
+    },
+    {
+      "index": 1,
+      "lineStart": 1,
+      "lineEnd": 2,
+      "tokens": [
+        { "index": 0, "text": "troiae", "form": "troiae", "line": 1 },
+        { "index": 1, "text": "qui", "form": "qui", "line": 1 },
+        { "index": 2, "text": "primus", "form": "primus", "line": 1 },
+        { "index": 3, "text": "ab", "form": "ab", "line": 1 },
+        { "index": 4, "text": "oris", "form": "oris", "line": 1 },
+        { "index": 5, "text": "Italiam", "form": "italiam", "line": 2 },
+        { "index": 6, "text": "fato", "form": "fato", "line": 2 },
+        { "index": 7, "text": "profugus", "form": "profugus", "line": 2 },
+        { "index": 8, "text": "laviniaque", "form": "lavinia", "line": 2, "enclitics": ["que"] },
+        { "index": 9, "text": "venit", "form": "venit", "line": 2 },
+        { "index": 10, "text": "litora", "form": "litora", "line": 2, "punctuation": "," }
+      ],
+      "groups": [
+        { "kind": "agreement", "tokenIndices": [1, 2], "matched": "masc nom sg" },
+        { "kind": "agreement", "tokenIndices": [8, 10], "matched": "neut nom pl" },
+        { "kind": "subject-verb", "tokenIndices": [9, 10], "matched": "3rd sg verb with neut pl subject" }
+      ],
+      "order": [
+        { "order": 1, "label": "subject", "tokenIndices": [1, 2] },
+        { "order": 2, "label": "phrase", "tokenIndices": [3, 4, 0] },
+        { "order": 3, "label": "object", "tokenIndices": [5] },
+        { "order": 4, "label": "phrase", "tokenIndices": [6, 7] },
+        { "order": 5, "label": "object", "tokenIndices": [8, 10] },
+        { "order": 6, "label": "verb", "tokenIndices": [9] }
+      ]
+    }
+  ],
+  "analyses": {
+    "arma": [
+      {
+        "pos": "noun",
+        "lemma": "arma",
+        "cases": ["nom", "voc", "acc"],
+        "numbers": ["pl"],
+        "genders": ["neut"],
+        "stem": "um_i",
+        "features": []
+      }
+    ],
+    "virum": [
+      {
+        "pos": "noun",
+        "lemma": "vir",
+        "cases": ["acc"],
+        "numbers": ["sg"],
+        "genders": ["masc"],
+        "stem": "us_i",
+        "features": []
+      }
+    ],
+    "cano": [
+      {
+        "pos": "verb",
+        "lemma": "cano",
+        "tense": "pres",
+        "mood": "ind",
+        "voice": "active",
+        "persons": ["1st"],
+        "numbers": ["sg"],
+        "stem": "conj1,are_vb",
+        "features": []
+      },
+      {
+        "pos": "adjective",
+        "lemma": "canus",
+        "cases": ["abl"],
+        "numbers": ["sg"],
+        "genders": ["masc", "neut"],
+        "degree": "positive",
+        "stem": "us_a_um",
+        "features": []
+      }
+    ],
+    "troiae": [
+      {
+        "pos": "name",
+        "lemma": "Troia",
+        "cases": ["gen", "dat"],
+        "numbers": ["sg"],
+        "genders": ["fem"],
+        "stem": "a_ae",
+        "features": []
+      },
+      {
+        "pos": "name",
+        "lemma": "Troia",
+        "cases": ["nom", "voc"],
+        "numbers": ["pl"],
+        "genders": ["fem"],
+        "stem": "a_ae",
+        "features": []
+      }
+    ],
+    "qui": [
+      {
+        "pos": "pronoun",
+        "lemma": "qui",
+        "cases": ["nom"],
+        "numbers": ["sg"],
+        "genders": ["masc"],
+        "stem": "relative",
+        "features": []
+      }
+    ],
+    "primus": [
+      {
+        "pos": "adjective",
+        "lemma": "primus",
+        "cases": ["nom"],
+        "numbers": ["sg"],
+        "genders": ["masc"],
+        "degree": "positive",
+        "stem": "us_a_um",
+        "features": []
+      }
+    ],
+    "ab": [
+      {
+        "pos": "preposition",
+        "lemma": "ab",
+        "stem": "prep",
+        "features": []
+      }
+    ],
+    "oris": [
+      {
+        "pos": "noun",
+        "lemma": "ora",
+        "cases": ["abl"],
+        "numbers": ["pl"],
+        "genders": ["fem"],
+        "stem": "a_ae",
+        "features": []
+      }
+    ],
+    "italiam": [
+      {
+        "pos": "name",
+        "lemma": "Italia",
+        "cases": ["acc"],
+        "numbers": ["sg"],
+        "genders": ["fem"],
+        "stem": "a_ae",
+        "features": []
+      }
+    ],
+    "fato": [
+      {
+        "pos": "noun",
+        "lemma": "fatum",
+        "cases": ["dat", "abl"],
+        "numbers": ["sg"],
+        "genders": ["neut"],
+        "stem": "um_i",
+        "features": []
+      }
+    ],
+    "profugus": [],
+    "lavinia": [
+      {
+        "pos": "name",
+        "lemma": "Lavinium",
+        "cases": ["nom", "voc", "acc"],
+        "numbers": ["pl"],
+        "genders": ["neut"],
+        "stem": "um_i",
+        "features": []
+      }
+    ],
+    "venit": [
+      {
+        "pos": "verb",
+        "lemma": "venio",
+        "tense": "pres",
+        "mood": "ind",
+        "voice": "active",
+        "persons": ["3rd"],
+        "numbers": ["sg"],
+        "stem": "conj4,ire_vb",
+        "features": []
+      }
+    ],
+    "litora": [
+      {
+        "pos": "noun",
+        "lemma": "litus",
+        "cases": ["nom", "voc", "acc"],
+        "numbers": ["pl"],
+        "genders": ["neut"],
+        "stem": "s_tis",
+        "features": []
+      }
+    ]
+  },
+  "source": {
+    "name": "Vergil, Aeneid, Book 1 (lines 1–2)",
+    "url": "https://github.com/PerseusDL/canonical-latinlit",
+    "license": "CC BY-SA — Perseus Digital Library"
+  }
+}
