@@ -10,7 +10,7 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
-    "import": "pnpm --filter @lego/corpus import"
+    "import": "pnpm --filter @lego/corpus run import"
   },
   "engines": {
     "node": ">=22"
