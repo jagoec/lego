@@ -59,7 +59,7 @@ function analysesFor(analyses: AnalysisMap, token: Token): MorpheusAnalysis[] {
   return analyses[token.form] ?? [];
 }
 
-function isAdjectival(analysis: MorpheusAnalysis): boolean {
+export function isAdjectival(analysis: MorpheusAnalysis): boolean {
   return analysis.pos === 'adjective' || (analysis.pos === 'verb' && analysis.mood === 'part');
 }
 
