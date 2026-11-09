@@ -1,0 +1,2 @@
+felices
+<NL>N fe_li_ce_s,felix#1  masc/fem acc pl			ix_adj</NL><NL>N fe_li_ce_s,felix#1  masc/fem nom/voc pl			ix_adj</NL><NL>N felice_s,filix  fem acc pl			ix_icis</NL><NL>N felice_s,filix  fem nom/voc pl			ix_icis</NL>

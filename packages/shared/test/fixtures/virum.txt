@@ -1,0 +1,2 @@
+virum
+<NL>N viru_m,vir  masc gen pl		poetic	0_i</NL><NL>N vir  masc acc sg			0_i</NL><NL>N vi_rum,virus  neut nom/voc/acc sg		indeclform	irreg_nom2</NL><NL>N vi_ru_m,virus  neut gen pl		poetic	us_i</NL><NL>N vi_rum,virus  neut nom/voc/acc sg			us_i</NL>

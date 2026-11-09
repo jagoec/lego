@@ -1,0 +1,2 @@
+maiorem
+<NL>N magnus  masc/fem acc comp sg			ior_ius_comp</NL><NL>N majorem,magnus  masc/fem acc comp sg			or_us_comp</NL>

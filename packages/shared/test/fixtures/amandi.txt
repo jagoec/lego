@@ -1,0 +1,2 @@
+amandi
+<NL>V amandi_,amo  gerundive masc nom/voc pl			conj1,are_vb</NL><NL>V amandi_,amo  gerundive neut gen sg			conj1,are_vb</NL><NL>V amandi_,amo  gerundive masc gen sg			conj1,are_vb</NL>

@@ -1,0 +1,2 @@
+ferox
+<NL>N ferox  neut acc sg			ox_adj</NL><NL>N ferox  masc/fem/neut nom/voc sg			ox_adj</NL>

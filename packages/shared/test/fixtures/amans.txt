@@ -1,0 +1,2 @@
+amans
+<NL>P ama_ns,amo  pres part neut acc sg			conj1,are_vb</NL><NL>P ama_ns,amo  pres part masc/fem/neut nom/voc sg			conj1,are_vb</NL>

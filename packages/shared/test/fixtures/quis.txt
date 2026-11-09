@@ -1,0 +1,2 @@
+quis
+<NL>V qui_s,queo  pres ind act 2nd sg			irreg_pp1</NL><NL>N quis#1  masc/fem nom sg		indeclform	interrog</NL><NL>N quis#2  masc/fem nom sg		indeclform	indef</NL>

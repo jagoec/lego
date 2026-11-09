@@ -1,0 +1,2 @@
+breve
+<NL>N breve  neut abl sg			is_is</NL><NL>N breve  neut nom/voc/acc sg			is_is</NL><NL>N brevis  neut nom/voc/acc sg			is_e</NL><NL>N brevis  fem abl sg			is_is</NL><NL>N brevis  masc abl sg			is_is</NL>

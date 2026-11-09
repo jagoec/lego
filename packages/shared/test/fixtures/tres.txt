@@ -1,0 +1,2 @@
+tres
+<NL>N tre_s,tres  masc/fem acc pl		indeclform	numeral</NL><NL>N tre_s,tres  masc/fem nom pl		indeclform	numeral</NL>

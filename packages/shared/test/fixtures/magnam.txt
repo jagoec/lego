@@ -1,0 +1,2 @@
+magnam
+<NL>N magnus  fem acc sg			us_a_um</NL><NL>N magnus#1  fem acc sg			us_a_um</NL>

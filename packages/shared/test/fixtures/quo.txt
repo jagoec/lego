@@ -1,0 +1,2 @@
+quo
+<NL>N quo_,qui#2  masc/neut abl sg		indeclform	relative</NL><NL>N quo_,quis#1  masc/fem/neut abl sg		indeclform	interrog</NL><NL>N quo_,quis#2  masc/fem/neut abl sg		indeclform	indef</NL><NL>N quo_,quo 		indeclform	adverb</NL>

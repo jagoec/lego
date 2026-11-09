@@ -1,0 +1,2 @@
+brevius
+<NL>N brevis  adverbial comp			is_e</NL><NL>N brevis  neut nom/voc/acc comp sg			is_e</NL>

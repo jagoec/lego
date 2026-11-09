@@ -1,0 +1,2 @@
+multa
+<NL>N multa  neut nom/voc/acc pl			us_i</NL><NL>N multa_,multa#1  fem abl sg			a_ae</NL><NL>N multa#1  fem nom/voc sg			a_ae</NL><NL>V multa_,multo#2  pres imperat act 2nd sg			conj1,are_vb</NL><NL>N multus  neut nom/voc/acc pl			us_a_um</NL><NL>N multa_,multus  fem abl sg			us_a_um</NL><NL>N multus  fem nom/voc sg			us_a_um</NL>

@@ -1,0 +1,2 @@
+brevissime
+<NL>N brevissime_,brevis  adverbial superl			is_e</NL><NL>N brevis  masc/neut voc superl sg			is_e</NL>

@@ -1,0 +1,2 @@
+ipsum
+<NL>N ipse  masc acc sg		indeclform	demonstr</NL><NL>N ipse  neut nom/voc/acc sg		indeclform	demonstr</NL><NL>N ipsu_m,ipse  masc/neut gen pl		poetic indeclform	demonstr</NL>

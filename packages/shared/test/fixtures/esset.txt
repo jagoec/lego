@@ -1,0 +1,2 @@
+esset
+<NL>V e_sset,edo#1  imperf subj act 3rd sg			irreg_pp1</NL><NL>V sum#1  imperf subj act 3rd sg			irreg_pp1</NL>

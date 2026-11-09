@@ -1,0 +1,2 @@
+sui
+<NL>N sui_,sui  masc/fem gen pl		indeclform	pron3</NL><NL>N sui_,sui  masc/fem gen sg		indeclform	pron3</NL><NL>V suo  pres inf pass			conj3</NL><NL>V sui_,suo  perf ind act 1st sg			perfstem</NL><NL>N su_i_,sus  masc/fem dat sg		indeclform	irreg_nom3</NL><NL>N sui_,suum  neut gen sg			us_i</NL><NL>N sui_,suus  masc nom/voc pl			us_a_um</NL><NL>N sui_,suus  neut gen sg			us_a_um</NL><NL>N sui_,suus  masc gen sg			us_a_um</NL>

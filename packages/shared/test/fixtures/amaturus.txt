@@ -1,0 +1,2 @@
+amaturus
+<NL>P ama_turus,amo  fut part act masc nom sg			pp4,are_vb</NL>

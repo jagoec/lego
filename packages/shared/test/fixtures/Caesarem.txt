@@ -1,0 +1,2 @@
+Caesarem
+<NL>N Caesar  masc acc sg			0_is</NL>

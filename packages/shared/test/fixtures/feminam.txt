@@ -1,0 +1,2 @@
+feminam
+<NL>N fe_minam,femina  fem acc sg			a_ae</NL>

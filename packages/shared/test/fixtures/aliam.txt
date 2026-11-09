@@ -1,0 +1,2 @@
+aliam
+<NL>N alius#2  fem acc sg		indeclform	irreg_nom2</NL>

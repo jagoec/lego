@@ -1,0 +1,2 @@
+Augustum
+<NL>N Augustus  masc acc sg			us_i</NL><NL>N augustu_m,augustus#1  neut gen pl		poetic	us_a_um</NL><NL>N augustu_m,augustus#1  masc gen pl		poetic	us_a_um</NL><NL>N augustum,augustus#1  masc acc sg			us_a_um</NL><NL>N augustum,augustus#1  neut nom sg			us_a_um</NL><NL>N augustum,augustus#1  neut nom/voc/acc sg			us_a_um</NL>

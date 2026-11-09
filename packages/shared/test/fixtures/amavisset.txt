@@ -1,0 +1,2 @@
+amavisset
+<NL>V ama_visset,amo  plup subj act 3rd sg			avperf,are_vb</NL>

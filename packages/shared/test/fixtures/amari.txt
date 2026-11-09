@@ -1,0 +1,2 @@
+amari
+<NL>N ama_ri_,amarus  masc nom/voc pl			us_a_um</NL><NL>N ama_ri_,amarus  neut gen sg			us_a_um</NL><NL>N ama_ri_,amarus  masc gen sg			us_a_um</NL><NL>V ama_ri,amo  pres inf pass			conj1,are_vb</NL>

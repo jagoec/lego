@@ -1,0 +1,2 @@
+puella
+<NL>N puella_,puella  fem abl sg			a_ae</NL><NL>N puella  fem nom/voc sg			a_ae</NL>

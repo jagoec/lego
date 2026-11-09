@@ -1,0 +1,2 @@
+alterum
+<NL>N alter  masc acc sg		indeclform	irreg_nom2</NL><NL>N alter  neut nom/voc sg		indeclform	irreg_nom2</NL><NL>N alteru_m,alter  masc/neut gen pl		poetic indeclform	irreg_nom2</NL><NL>N alteru_m,alter  neut gen pl		poetic	er_era_erum</NL><NL>N alteru_m,alter  masc gen pl		poetic	er_era_erum</NL><NL>N alter  masc acc sg			er_era_erum</NL><NL>N alter  neut nom/voc/acc sg			er_era_erum</NL><NL>N alter  neut nom/voc sg			er_era_erum</NL>

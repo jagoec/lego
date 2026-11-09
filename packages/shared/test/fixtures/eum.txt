@@ -1,0 +1,2 @@
+eum
+<NL>N is  masc acc sg		indeclform	pron3</NL><NL>N eu_m,is  masc/neut gen pl		poetic indeclform	pron3</NL>

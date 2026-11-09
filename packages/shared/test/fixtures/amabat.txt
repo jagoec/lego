@@ -1,0 +1,2 @@
+amabat
+<NL>V ama_bat,amo  imperf ind act 3rd sg			conj1,are_vb</NL>

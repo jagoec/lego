@@ -1,0 +1,2 @@
+duo
+<NL>N duo  masc/neut nom pl		indeclform	irreg_adj3</NL>

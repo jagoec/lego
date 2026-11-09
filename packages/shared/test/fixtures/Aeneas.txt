@@ -1,0 +1,2 @@
+Aeneas
+<NL>N Aene_a_s,Aenea  fem acc pl			a_ae</NL><NL>N Aene_a_s,Aeneas  masc acc pl			as_ae</NL><NL>N Aene_a_s,Aeneas  masc nom sg			as_ae</NL><NL>N ae_nea_s,aeneus  fem acc pl			us_a_um</NL>

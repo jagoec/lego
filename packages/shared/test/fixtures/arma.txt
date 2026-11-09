@@ -1,0 +1,2 @@
+arma
+<NL>N arma  neut nom/voc/acc pl			us_i</NL><NL>V arma_,armo  pres imperat act 2nd sg			conj1,are_vb</NL>

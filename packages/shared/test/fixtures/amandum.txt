@@ -1,0 +1,2 @@
+amandum
+<NL>V amandu_m,amo  gerundive neut gen pl		poetic	conj1,are_vb</NL><NL>V amandu_m,amo  gerundive masc gen pl		poetic	conj1,are_vb</NL><NL>V amo  gerundive masc acc sg			conj1,are_vb</NL><NL>V amo  gerundive neut nom sg			conj1,are_vb</NL><NL>V amo  gerundive neut nom/voc/acc sg			conj1,are_vb</NL>

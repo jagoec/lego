@@ -1,0 +1,2 @@
+qui
+<NL>N qui_,qui#1  masc nom pl		indeclform	interrog</NL><NL>N qui_,qui#1  masc nom sg		indeclform	interrog</NL><NL>N qui_,qui#2  masc nom pl		indeclform	relative</NL><NL>N qui_,qui#2  masc nom sg		indeclform	relative</NL><NL>N qui_,quis#1  masc nom pl		indeclform	interrog</NL><NL>N qui_,quis#2  masc nom pl		indeclform	indef</NL>

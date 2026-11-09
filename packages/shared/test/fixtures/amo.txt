@@ -1,0 +1,2 @@
+amo
+<NL>V amo_,amo  pres ind act 1st sg			conj1,are_vb</NL>

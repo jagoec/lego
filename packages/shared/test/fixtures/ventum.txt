@@ -1,0 +1,2 @@
+ventum
+<NL>P ventu_m,venio  perf part pass neut gen pl		poetic	pp4</NL><NL>P ventu_m,venio  perf part pass masc gen pl		poetic	pp4</NL><NL>P venio  perf part pass masc acc sg			pp4</NL><NL>P venio  perf part pass neut nom sg			pp4</NL><NL>P venio  perf part pass neut nom/voc/acc sg			pp4</NL><NL>N venio  supine neut nom sg			pp4</NL><NL>N ventu_m,ventus  masc gen pl		poetic	us_i</NL><NL>N ventus  masc acc sg			us_i</NL>

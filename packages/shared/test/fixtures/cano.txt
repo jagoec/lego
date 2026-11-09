@@ -1,0 +1,2 @@
+cano
+<NL>V cano_,cano  pres ind act 1st sg			conj3</NL><NL>N ca_no_,canus  neut abl sg			us_a_um</NL><NL>N ca_no_,canus  masc abl sg			us_a_um</NL><NL>N ca_no_,canus  neut dat sg			us_a_um</NL><NL>N ca_no_,canus  masc dat sg			us_a_um</NL>
