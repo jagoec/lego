@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Real excerpt of texts/vergil-aeneid.tei.xml (PerseusDL/canonical-latinlit,
+     phi0690.phi003.perseus-lat2, CC BY-SA 4.0): lines of Aeneid book 1
+     chosen to exercise the parser - plain lines, <q> speech markup
+     (including rend="merge"), a colon before a quote, a double space,
+     em-dashes (trailing and mid-word), the parenthetical interjection
+     (infandum!), a <del> transposition line, and mixed quote/text content.
+     Kept verbatim, including original indentation, for honest tests. -->
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+    <teiHeader><fileDesc><titleStmt><title>Aeneid</title></titleStmt></fileDesc></teiHeader>
+    <text>
+        <body>
+            <div type="edition" xml:lang="lat" subtype="book">
+<div n="1" type="textpart" subtype="book">
+<milestone ed="p" n="1" unit="card"/>
+        <l n="1" rend="indent">Arma virumque cano, Troiae qui primus ab oris</l>
+        <l n="2">Italiam, fato profugus, Laviniaque venit</l>
+        <l n="3">litora, multum ille et terris iactatus et alto</l>
+        <l n="4">vi superum saevae memorem Iunonis ob iram;</l>
+        <l n="5">multa quoque et bello passus, dum conderet urbem,</l>
+        <l n="6">inferretque deos Latio, genus unde Latinum,</l>
+        <l n="7">Albanique patres, atque altae moenia Romae.</l>
+        <l n="24">prima quod ad Troiam pro caris gesserat Argis—</l>
+        <l n="36">cum Iuno, aeternum servans sub pectore volnus,</l>
+        <l n="37">haec secum: <q>Mene incepto desistere victam,</q></l>
+        <l n="38"><q rend="merge">nec posse Italia Teucrorum avertere regem?</q></l>
+        <l n="48"><q rend="merge">bella gero!  Et quisquam numen Iunonis adoret</q></l>
+        <l n="65" rend="indent"><q>Aeole, namque tibi divom pater atque hominum rex</q></l>
+        <l n="66"><q rend="merge">et mulcere dedit fluctus et tollere vento</q>,</l>
+        <l n="198" rend="indent"><q>O socii—neque enim ignari sumus ante malorum—</q></l>
+        <l n="250"><q rend="merge">nos, tua progenies, caeli quibus adnuis arcem,</q></l>
+        <l n="251"><q rend="merge">navibus (infandum!) amissis, unius ob iram</q></l>
+        <l n="252"><q rend="merge">prodimur atque Italis longe disiungimur oris.</q></l>
+        <l n="426"><del>Iura magistratusque legunt sanctumque senatum;</del></l>
+        <l n="753"><q>Immo age, et a prima dic, hospes, origine nobis</q></l>
+        <l n="754"><q rend="merge">insidias</q>, inquit, <q>Danaum, casusque tuorum,</q></l>
+        <l n="755"><q rend="merge">erroresque tuos; nam te iam septima portat</q></l>
+        <l n="756" rend="merge">omnibus errantem terris et fluctibus aestas.</l>
+</div>
+            </div>
+        </body>
+    </text>
+</TEI>
