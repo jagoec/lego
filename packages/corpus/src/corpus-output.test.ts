@@ -32,6 +32,32 @@ describe.skipIf(!existsSync(CORPUS_PATH))('generated corpus: aeneid-1.json', () 
     expect(Math.max(...lines)).toBe(756);
   });
 
+  it('carries v2 clause structure and parse selections', () => {
+    // every sentence has clauses and chunk clauseIds (validation above
+    // already proves coverage/order); spot-check the opening sentence:
+    // the relative clause "qui primus ab oris … venit" (tokens 4–12)
+    const first = passage.sentences[0]!;
+    expect(first.clauses?.[0]).toMatchObject({ id: 0, kind: 'main' });
+    const relative = first.clauses?.find((clause) => clause.kind === 'relative');
+    expect(relative?.tokenIndices).toEqual([4, 5, 6, 7, 8, 9, 10, 11, 12]);
+    const roles = first.order.map((chunk) => [chunk.role, chunk.clauseId] as const);
+    expect(roles).toContainEqual(['verb', 0]); // cano
+    // subordinate chunks carry clauseId but no role (qui primus)
+    const quiPrimus = first.order.find((chunk) => chunk.label === 'subject' && chunk.clauseId === 1);
+    expect(quiPrimus?.role).toBeUndefined();
+
+    // selections with provenance on ambiguous tokens only
+    const selected = passage.sentences.flatMap((sentence) =>
+      sentence.tokens.filter((token) => token.selected !== undefined),
+    );
+    expect(selected.length).toBeGreaterThan(700);
+    for (const token of selected) {
+      expect(['solver', 'translation', 'llm', 'manual']).toContain(token.selectedBy);
+      expect((passage.analyses[token.form] ?? []).length).toBeGreaterThan(1);
+    }
+    expect(selected.some((token) => token.selectedBy === 'translation')).toBe(true);
+  });
+
   it('begins with the canonical opening and records the source', () => {
     const first = passage.sentences[0]?.tokens[0];
     expect(first).toMatchObject({ text: 'Arma', form: 'Arma', line: 1 });

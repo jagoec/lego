@@ -191,6 +191,35 @@ describe('detectClauseSpans — participial (ablative absolute)', () => {
     expect(detectClauseSpans(tokens, analyses)).toEqual([]);
   });
 
+  it('does not fire when an accusative ADJECTIVE lies between (omnibus unam posthabita)', () => {
+    const tokens = [token('omnibus', 0), token('unam', 1), token('posthabita', 2)];
+    const analyses = mapOf([
+      ['omnibus', [
+        analysis('noun', { cases: ['abl'], numbers: ['pl'], genders: ['fem'] }),
+        analysis('adjective', { cases: ['abl'], numbers: ['pl'], genders: ['common'] }),
+      ]],
+      ['unam', [analysis('adjective', { cases: ['acc'], numbers: ['sg'], genders: ['fem'] })]],
+      ['posthabita', [analysis('verb', { mood: 'part', tense: 'perf', voice: 'passive', cases: ['abl', 'nom'], numbers: ['sg'], genders: ['fem'] })]],
+    ]);
+    expect(detectClauseSpans(tokens, analyses)).toEqual([]);
+  });
+
+  it('fires through a nom/acc-ambiguous interjection (navibus infandum amissis)', () => {
+    const tokens = [token('navibus', 0), token('infandum', 1), token('amissis', 2)];
+    const analyses = mapOf([
+      ['navibus', [
+        analysis('noun', { cases: ['abl'], numbers: ['pl'], genders: ['fem'] }),
+        analysis('noun', { cases: ['dat'], numbers: ['pl'], genders: ['fem'] }),
+      ]],
+      ['infandum', [
+        analysis('adjective', { cases: ['acc'], numbers: ['sg'], genders: ['masc'] }),
+        analysis('adjective', { cases: ['nom', 'voc', 'acc'], numbers: ['sg'], genders: ['neut'] }),
+      ]],
+      ['amissis', [analysis('verb', { mood: 'part', tense: 'perf', voice: 'passive', cases: ['abl'], numbers: ['pl'], genders: ['fem'] })]],
+    ]);
+    expect(detectClauseSpans(tokens, analyses)).toEqual([{ start: 0, end: 2, kind: 'participial' }]);
+  });
+
   it('does not fire when a conjunction lies between (terris iactatus et alto)', () => {
     const tokens = [token('terris', 0), token('iactatus', 1), token('et', 2), token('alto', 3)];
     const analyses = mapOf([
@@ -271,6 +300,28 @@ describe('detectClauseSpans — coordination', () => {
     ]);
     // cum-clause ends at maneret; taceret opens no clause of its own
     // (it is an anchor, not a trigger) and stays main
+    expect(detectClauseSpans(tokens, analyses)).toEqual([{ start: 0, end: 1, kind: 'adverbial' }]);
+  });
+
+  it('coordinated indicatives (tenditque fovetque) stay main; only subjunctives join', () => {
+    // "si qua fata sinant, iam tum tenditque fovetque"
+    const tokens = [
+      token('si', 0),
+      token('sinant', 1),
+      token('iam', 2),
+      token('tum', 3),
+      token('tendit', 4, { text: 'tenditque', enclitics: ['que'] }),
+      token('fovet', 5, { text: 'fovetque', enclitics: ['que'] }),
+    ];
+    const analyses = mapOf([
+      ['si', [analysis('conjunction')]],
+      ['sinant', [analysis('verb', { mood: 'subj', tense: 'pres', voice: 'active', persons: ['3rd'], numbers: ['pl'] })]],
+      ['iam', [analysis('adverb')]],
+      ['tum', [analysis('adverb')]],
+      ['tendit', [analysis('verb', { mood: 'ind', tense: 'pres', voice: 'active', persons: ['3rd'], numbers: ['sg'] })]],
+      ['fovet', [analysis('verb', { mood: 'ind', tense: 'pres', voice: 'active', persons: ['3rd'], numbers: ['sg'] })]],
+    ]);
+    // the si-clause ends at sinant; the indicative -que verbs do not extend it
     expect(detectClauseSpans(tokens, analyses)).toEqual([{ start: 0, end: 1, kind: 'adverbial' }]);
   });
 });

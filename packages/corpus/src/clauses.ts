@@ -30,12 +30,13 @@
  *   participle with an ablative parse preceded (within
  *   {@link ABL_ABS_WINDOW} tokens, no verb anchor between) by a
  *   noun/pronoun/name with an ablative parse, with no accusative-capable
- *   nominal and no conjunction strictly between the two (guards against
- *   the false positives "ab oris Italiam fato" — an accusative between —
- *   and "terris iactatus et alto" — a conjunction between). The clause
- *   spans that noun through the participle. ("plain participial phrases
- *   when confident" are left for a later pass — ablative absolutes are
- *   the confident shape.)
+ *   nominal, adjective or participle and no conjunction strictly between
+ *   the two (guards against the false positives "ab oris Italiam fato" —
+ *   an accusative between —, "terris magis omnibus unam posthabita" — an
+ *   accusative adjective between —, and "terris iactatus et alto" — a
+ *   conjunction between). The clause spans that noun through the
+ *   participle. ("plain participial phrases when confident" are left for
+ *   a later pass — ablative absolutes are the confident shape.)
  * - **accusative + infinitive** (kind 'completive'): an infinitive whose
  *   nearest preceding token within {@link ACI_WINDOW} is an
  *   accusative-capable nominal (or participle), with no verb anchor
@@ -46,16 +47,18 @@
  * ## Coordination (documented rule)
  *
  * A verb anchor whose OWN token carries the `-que` enclitic
- * (inferret-que) is coordinated with the previous verb anchor: it joins
- * that anchor's clause, extending the clause's span through itself. A
- * coordinated verb in the main clause therefore stays in the main
- * clause — the heuristic never emits kind 'coordinated' (it is reserved
- * for manual overrides); two coordinated main verbs share the main
- * clause by design. Coordination by a preceding `et`/`at(que)` token is
- * deliberately NOT used: `et` usually coordinates nominals
- * ("multum ille et terris iactatus et alto"), and combined with a
- * spurious verb anchor it extends clauses wrongly; a `-que` fused to
- * the coordinated verb itself is the reliable signal in Vergil.
+ * (inferret-que) is coordinated with the previous verb anchor when BOTH
+ * are purely subjunctive: it joins that anchor's clause, extending the
+ * clause's span through itself — the "dum conderet urbem inferretque
+ * deos" shape. Coordinated indicatives ("tenditque fovetque") are
+ * main-clause verbs and stay in the main clause. A coordinated verb in
+ * the main clause therefore also stays main — the heuristic never emits
+ * kind 'coordinated' (it is reserved for manual overrides). A preceding
+ * `et`/`at(que)` token is deliberately NOT used as a coordination
+ * signal: `et` usually coordinates nominals ("multum ille et terris
+ * iactatus et alto"), and combined with a spurious verb anchor it
+ * extends clauses wrongly; a `-que` fused to the coordinated verb
+ * itself is the reliable signal in Vergil.
  *
  * ## Overlap resolution
  *
@@ -128,10 +131,21 @@ function caseCapable(
   return analyses.some((parse) => filter(parse) && parse.cases?.includes(c));
 }
 
-/** Whether every finite parse at a verb anchor is subjunctive. */
+/**
+ * Whether every finite parse at a verb anchor is subjunctive. Moodless
+ * finite parses (morpheus's `inferret` quirk — "imperf act 3rd sg" with
+ * no mood token) are treated as unknown rather than contradictory:
+ * they neither prove nor disprove the subjunctive.
+ */
 function purelySubjunctive(analyses: readonly MorpheusAnalysis[]): boolean {
   const finite = analyses.filter(isFiniteAnalysis);
   return finite.length > 0 && finite.every((parse) => parse.mood === 'subj');
+}
+
+/** Whether no finite parse is clearly non-subjunctive (indicative/imperative). */
+function subjunctiveCompatible(analyses: readonly MorpheusAnalysis[]): boolean {
+  const finite = analyses.filter(isFiniteAnalysis);
+  return finite.length > 0 && finite.every((parse) => parse.mood !== 'ind' && parse.mood !== 'imperat');
 }
 
 /**
@@ -186,15 +200,30 @@ export function detectClauseSpans(
     }
 
     // ablative absolute: ablative participle + preceding ablative nominal,
-    // with no accusative nominal and no conjunction strictly between
+    // with no accusative-capable nominal (or adjective) and no conjunction
+    // strictly between
     if (tokenAnalyses.some((parse) => isParticiple(parse) && parse.cases?.includes('abl'))) {
       for (let j = i - 1; j >= i - ABL_ABS_WINDOW && j >= 0; j--) {
         if (isAnchor(j)) break; // a verb between noun and participle blocks it
         const other = tokens[j]!;
         const between = tokens.slice(j + 1, i);
-        const accBetween = between.some((t) =>
-          caseCapable(analysesOf(analyses, t), (p) => isNominal(p) || isParticiple(p), 'acc'),
-        );
+        // an intervening token that can ONLY be accusative (some
+        // nominal/adjective/participle parse with accusative, and NO
+        // parse with nominative) breaks the ablative-absolute shape:
+        // "oris Italiam fato", "omnibus unam posthabita". Neuters and
+        // nom/acc-ambiguous forms ("infandum" in "navibus infandum
+        // amissis") do not block — nom=acc makes them no evidence of
+        // an accusative object.
+        const accBetween = between.some((t) => {
+          const parses = analysesOf(analyses, t);
+          return (
+            parses.some(
+              (p) =>
+                (isNominal(p) || isParticiple(p) || p.pos === 'adjective') &&
+                p.cases?.includes('acc') === true,
+            ) && !parses.some((p) => p.cases?.includes('nom'))
+          );
+        });
         const conjBetween = between.some((t) =>
           analysesOf(analyses, t).some((parse) => parse.pos === 'conjunction'),
         );
@@ -222,13 +251,20 @@ export function detectClauseSpans(
   }
 
   // Coordination: a verb anchor carrying its own -que enclitic joins
-  // the previous anchor's clause (extending its span). See module doc.
+  // the previous anchor's clause (extending its span) — but only when
+  // both verbs are purely subjunctive: coordinate SUBJUNCTIVES are the
+  // "dum conderet urbem inferretque deos" shape (a second verb inside
+  // the subordinate clause), while coordinate INDICATIVES
+  // ("tenditque fovetque") are main-clause verbs that must stay main.
+  // See the module doc.
   for (let k = 1; k < anchors.length; k++) {
     const v = anchors[k]!;
     const verb = tokens[v]!;
     const previous = tokens[anchors[k - 1]!];
     if (previous === undefined) continue;
     if (verb.enclitics?.includes('que') !== true) continue;
+    if (!subjunctiveCompatible(analysesOf(analyses, verb))) continue;
+    if (!subjunctiveCompatible(analysesOf(analyses, previous))) continue;
     const span = spans.find((span) => span.end === anchors[k - 1]);
     if (span !== undefined) span.end = v;
   }
