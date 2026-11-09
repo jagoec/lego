@@ -132,3 +132,32 @@ their packages and must keep `pnpm test` and `pnpm typecheck` green when they fi
   (from `Sentence.order`), interleaved or below the original.
 - Level 4: per-word "reveal gloss" affordance only — English never appears otherwise.
 - Component tests with vitest for popover rendering per level and group highlighting.
+
+## v2 refinements
+
+Three tasks agreed with the user; see the sections above for context.
+
+**Task A — parse disambiguation (corpus agent).** A constraint solver scores
+morpheus parses per sentence (agreement links, subject–verb person/number,
+finite-verb anchors), with a sentence-aligned public-domain translation as a
+soft tiebreaker ("I sing" → 1st sg). Output: `Token.selected` + `Token.selectedBy`.
+Evaluated against the gold Perseus treebank of Aeneid 6.1–336
+(`texts/treebank-aeneid6.xml`); accuracy report lives with the corpus package.
+A possible future LLM-assisted pass would commit `selectedBy: 'llm'` data —
+translations are never surfaced in the UI.
+
+**Task B — color-coded reading order (corpus agent data + frontend UI).**
+Main clause: subject red, verb yellow, predicate blue. Each subordinate clause
+gets its own rainbow color (green → purple → orange → teal → pink …), its verb
+in a darker shade, internal order via numbered chunks. Full colors in the
+reading-order view; subtle color-tinted underlines in the main reading view.
+Hovering any word highlights its color group. The word-level agreement
+highlighting (Group/`matched`) stays as-is and visually distinct.
+Data: `Sentence.clauses`, `Chunk.role`, `Chunk.clauseId`.
+
+**Task C — paradigm table side panel (frontend).** Static table data for the
+5 declensions (gender variants), 4 conjugations (active/passive), 3rd-decl
+adjectives, ~9 pronoun paradigms, and irregular verbs (sum, possum, fero, eo,
+volo). Stems from the corpus map to tables (a_ae → 1st decl, conj3 → 3rd conj,
+pronoun/irregular stems by lemma). A collapsible right panel synced to the
+hovered word, with the current word's cell highlighted via its selected parse.

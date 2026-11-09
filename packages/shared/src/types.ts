@@ -107,6 +107,15 @@ export interface Token {
   punctuation?: string;
   /** enclitics split off before analysis ("-que", "-ve", "-ne") */
   enclitics?: string[];
+
+  /**
+   * Index into `Passage.analyses[form]` of the contextually correct parse,
+   * chosen by the corpus disambiguator. Absent when unresolvable — the UI
+   * then shows all parses as before.
+   */
+  selected?: number;
+  /** which mechanism chose `selected` (provenance / trust signal for the UI) */
+  selectedBy?: 'solver' | 'translation' | 'llm' | 'manual';
 }
 
 export type GroupKind = 'agreement' | 'subject-verb' | 'manual';
@@ -120,12 +129,40 @@ export interface Group {
   matched?: string;
 }
 
+/**
+ * Role of a chunk within its clause — drives the color coding:
+ * main clause subject=red, verb=yellow, predicate=blue; each subordinate
+ * clause gets its own rainbow color.
+ */
+export type ChunkRole = 'subject' | 'verb' | 'predicate';
+
 /** One sense-unit in the reading-order view of a sentence. */
 export interface Chunk {
   /** 1-based position in reading order */
   order: number;
   /** optional label, e.g. "subject", "verb", "phrase" */
   label?: string;
+  /** syntactic role for color coding (optional — set when confident) */
+  role?: ChunkRole;
+  /** owning clause; the sentence's main clause is clause id 0 */
+  clauseId?: number;
+  tokenIndices: number[];
+}
+
+/** Clause kind — subordinate kinds get rainbow colors in reading order. */
+export type ClauseKind =
+  | 'main'
+  | 'coordinated'
+  | 'relative'
+  | 'adverbial'
+  | 'completive'
+  | 'participial';
+
+/** A syntactic clause within a sentence (one color group in the reader). */
+export interface Clause {
+  id: number;
+  kind: ClauseKind;
+  /** token indices belonging to this clause (subordinate clauses may interleave) */
   tokenIndices: number[];
 }
 
@@ -136,6 +173,8 @@ export interface Sentence {
   tokens: Token[];
   groups: Group[];
   order: Chunk[];
+  /** clause structure for color-coded reading order (absent in v1 data) */
+  clauses?: Clause[];
 }
 
 export interface PassageSource {
