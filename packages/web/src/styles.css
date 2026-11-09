@@ -516,6 +516,208 @@ body {
   padding: 0 0.1em;
 }
 
+/* ---------- paradigm panel ---------- */
+
+.paradigm-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(24rem, 92vw);
+  z-index: 30; /* below the popover (40): a popover near the right edge overlays the panel */
+  background: #fff;
+  border-left: 1px solid var(--line);
+  box-shadow: -10px 0 30px rgba(42, 36, 22, 0.1);
+  padding: 1.1rem 1.2rem 1.6rem;
+  overflow-y: auto;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.paradigm-panel__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+}
+
+.paradigm-panel__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+  margin: 0;
+  flex: 1;
+}
+
+.paradigm-panel__close {
+  appearance: none;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--muted);
+  background: #faf8f1;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.1rem 0.45rem;
+  cursor: pointer;
+}
+
+.paradigm-panel__close:hover {
+  background: #f0ebdd;
+}
+
+.paradigm-panel__close:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.paradigm-panel__word {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1rem;
+  margin: 0 0 0.35rem;
+}
+
+.paradigm-panel__note,
+.paradigm-panel__reason {
+  color: var(--muted);
+  font-size: 0.74rem;
+  margin: 0.2rem 0 0.55rem;
+}
+
+.paradigm-panel__empty {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.paradigm-panel__empty-word {
+  font-family: var(--serif);
+  font-style: normal;
+}
+
+/* nominal tables (declensions, adjectives, pronouns) */
+
+.paradigm-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.35rem 0 0.6rem;
+  font-family: var(--serif);
+  font-size: 0.93rem;
+}
+
+.paradigm-table__colhead,
+.paradigm-table__rowhead {
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-variant: normal;
+}
+
+.paradigm-table__colhead {
+  padding: 0.15rem 0.4rem;
+  text-align: center;
+}
+
+.paradigm-table__rowhead {
+  text-align: left;
+  padding-right: 0.55rem;
+  white-space: nowrap;
+}
+
+.paradigm-table__cell {
+  padding: 0.16rem 0.4rem;
+  border: 1px solid #efece4;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.paradigm-table__cell--blank {
+  border: none;
+}
+
+.paradigm-table__cell.is-here {
+  background: var(--linked);
+  border-color: #d8c48f;
+  font-weight: 600;
+}
+
+/* verbal tables (conjugations) */
+
+.paradigm-verb__section {
+  margin-bottom: 0.95rem;
+}
+
+.paradigm-verb__section-label {
+  font-size: 0.64rem;
+  font-weight: 600;
+  font-variant: small-caps;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 0 0 0.3rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.15rem;
+}
+
+.paradigm-verb__row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.1rem 0;
+}
+
+.paradigm-verb__row-label {
+  font-family: var(--sans);
+  font-size: 0.68rem;
+  color: var(--muted);
+  min-width: 6.4rem;
+}
+
+.paradigm-verb__cells {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.28rem;
+  flex: 1;
+}
+
+.paradigm-verb__cell {
+  border: 1px solid #efece4;
+  border-radius: 5px;
+  padding: 0.06rem 0.4rem;
+  font-family: var(--serif);
+  white-space: nowrap;
+}
+
+.paradigm-verb__cell.is-here {
+  background: var(--linked);
+  border-color: #d8c48f;
+  font-weight: 600;
+}
+
+.paradigm-verb__tag {
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  color: var(--faint);
+  margin-left: 0.28rem;
+}
+
+/* wide screens: the panel pushes the text column; narrow screens: overlay */
+
+@media (min-width: 1000px) {
+  .paradigm-panel {
+    width: 24rem;
+  }
+
+  .app--panel {
+    margin-right: 24.5rem;
+  }
+}
+
 /* ---------- footer ---------- */
 
 .footer {
