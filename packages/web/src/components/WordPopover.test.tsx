@@ -113,7 +113,7 @@ describe('selected-parse popover (token.selected)', () => {
     renderReader(3);
     hoverCano();
 
-    expect(screen.getByText(/1st conjugation — conj1,are_vb/)).toBeInTheDocument();
+    expect(screen.getByText(/3rd conjugation — conj3/)).toBeInTheDocument();
     // the other parse's stem only appears after expanding
     expect(screen.queryByText(/us_a_um/)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Other possible parses/ }));

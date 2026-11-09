@@ -119,7 +119,7 @@ describe('popover content per assistance level', () => {
     renderReader(3);
     fireEvent.mouseEnter(screen.getByText('cano'));
 
-    expect(screen.getByText(/1st conjugation — conj1,are_vb/)).toBeInTheDocument();
+    expect(screen.getByText(/3rd conjugation — conj3/)).toBeInTheDocument();
     // the adjective parse's stem is behind the expander
     fireEvent.click(screen.getByRole('button', { name: /Other possible parses/ }));
     expect(screen.getByText(/us_a_um/)).toBeInTheDocument();

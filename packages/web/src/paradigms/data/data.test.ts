@@ -65,26 +65,33 @@ describe('nominal table shapes', () => {
   });
 
   it('noun tables split sg/pl without gender columns; adjective and pronoun tables split by gender', () => {
+    const nominal = (id: TableId): NominalTable => TABLES[id] as NominalTable;
     for (const id of ['noun1', 'noun2m', 'noun2n', 'noun3c-mf', 'noun3c-n', 'noun3i-mf', 'noun3i-n', 'noun4-mf', 'noun4-n', 'noun5'] as const) {
-      expect(TABLES[id]!.columns.map((c) => c.gender)).toEqual([null, null]);
-      expect(TABLES[id]!.columns.map((c) => c.number)).toEqual(['sg', 'pl']);
+      expect(nominal(id).columns.map((c) => c.gender)).toEqual([null, null]);
+      expect(nominal(id).columns.map((c) => c.number)).toEqual(['sg', 'pl']);
     }
     for (const id of ['adj12-us', 'adj12-er', 'adj3-three', 'adj3-two', 'adj3-one'] as const) {
-      expect(TABLES[id]!.columns.map((c) => `${c.number} ${c.gender}`)).toEqual([
+      expect(nominal(id).columns.map((c) => `${c.number} ${c.gender}`)).toEqual([
         'sg masc', 'sg fem', 'sg neut', 'pl masc', 'pl fem', 'pl neut',
       ]);
     }
   });
 
   it('uses macronized reference forms in the cells', () => {
-    expect(TABLES['noun1']!.rows.find((r) => r.case === 'acc')!.forms[0]).toBe('fēminam');
-    expect(TABLES['noun3i-mf']!.rows.find((r) => r.case === 'gen')!.forms[1]).toBe('cīvium');
-    expect(TABLES['noun5']!.rows.find((r) => r.case === 'abl')!.forms[0]).toBe('rē');
-    expect(TABLES['adj12-us']!.rows.find((r) => r.case === 'nom')!.forms).toEqual([
+    const noun1 = TABLES['noun1'] as NominalTable;
+    const noun3i = TABLES['noun3i-mf'] as NominalTable;
+    const noun5 = TABLES['noun5'] as NominalTable;
+    const adj12 = TABLES['adj12-us'] as NominalTable;
+    const qui = TABLES['pron-qui'] as NominalTable;
+    const se = TABLES['pron-se'] as NominalTable;
+    expect(noun1.rows.find((r) => r.case === 'acc')!.forms[0]).toBe('fēminam');
+    expect(noun3i.rows.find((r) => r.case === 'gen')!.forms[1]).toBe('cīvium');
+    expect(noun5.rows.find((r) => r.case === 'abl')!.forms[0]).toBe('rē');
+    expect(adj12.rows.find((r) => r.case === 'nom')!.forms).toEqual([
       'bonus', 'bona', 'bonum', 'bonī', 'bonae', 'bona',
     ]);
-    expect(TABLES['pron-qui']!.rows.find((r) => r.case === 'gen')!.forms[0]).toBe('cuius');
-    expect(TABLES['pron-se']!.rows.find((r) => r.case === 'nom')!.forms).toEqual([null, null]);
+    expect(qui.rows.find((r) => r.case === 'gen')!.forms[0]).toBe('cuius');
+    expect(se.rows.find((r) => r.case === 'nom')!.forms).toEqual([null, null]);
   });
 });
 

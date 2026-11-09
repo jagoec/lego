@@ -94,7 +94,7 @@
         "voice": "active",
         "persons": ["1st"],
         "numbers": ["sg"],
-        "stem": "conj1,are_vb",
+        "stem": "conj3",
         "features": []
       },
       {
