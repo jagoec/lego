@@ -40,6 +40,17 @@ export function validatePassage(passage: Passage, options: ValidationOptions): s
       if (!/^[A-Za-z]+$/.test(token.text)) errors.push(`${at}: text "${token.text}" is not a bare word`);
       if (!/^[A-Za-z]+$/.test(token.form)) errors.push(`${at}: form "${token.form}" is not a bare word`);
       if (token.line < 1 || token.line > maxLine) errors.push(`${at}: line ${token.line} out of range 1..${maxLine}`);
+      if (token.selected !== undefined) {
+        const analyses = passage.analyses[token.form] ?? [];
+        if (token.selected < 0 || token.selected >= analyses.length) {
+          errors.push(`${at}: selected ${token.selected} out of range for ${analyses.length} analyses`);
+        }
+        if (token.selectedBy === undefined) {
+          errors.push(`${at}: selected without selectedBy`);
+        } else if (!['solver', 'translation', 'llm', 'manual'].includes(token.selectedBy)) {
+          errors.push(`${at}: unknown selectedBy "${token.selectedBy}"`);
+        }
+      }
       usedForms.add(token.form);
     });
 
@@ -77,6 +88,9 @@ export function validatePassage(passage: Passage, options: ValidationOptions): s
       const at = `${where}.order[${chunkPosition}]`;
       if (chunk.order !== chunkPosition + 1) errors.push(`${at}: order is ${chunk.order}, expected ${chunkPosition + 1}`);
       if (chunk.tokenIndices.length === 0) errors.push(`${at}: empty chunk`);
+      if (chunk.role !== undefined && !['subject', 'verb', 'predicate'].includes(chunk.role)) {
+        errors.push(`${at}: unknown role "${chunk.role}"`);
+      }
       let previous = -1;
       for (const index of chunk.tokenIndices) {
         if (index < 0 || index >= tokenCount) {
@@ -91,6 +105,59 @@ export function validatePassage(passage: Passage, options: ValidationOptions): s
     });
     for (let index = 0; index < tokenCount; index++) {
       if (!covered.has(index)) errors.push(`${where}: token ${index} is in no reading-order chunk`);
+    }
+
+    // clauses (v2): when present, they cover every token exactly once,
+    // the main clause is id 0, subordinate ids follow appearance order,
+    // and every chunk's clauseId references an existing clause.
+    if (sentence.clauses !== undefined) {
+      const clauseIds = new Set<number>();
+      let previousId = -1;
+      const clauseCovered = new Set<number>();
+      sentence.clauses.forEach((clause, clausePosition) => {
+        const at = `${where}.clauses[${clausePosition}]`;
+        if (clauseIds.has(clause.id)) errors.push(`${at}: duplicate clause id ${clause.id}`);
+        clauseIds.add(clause.id);
+        if (clausePosition === 0 && !(clause.id === 0 && clause.kind === 'main')) {
+          errors.push(`${at}: first clause must be the main clause (id 0, kind "main")`);
+        }
+        if (clausePosition > 0 && clause.id <= previousId) {
+          errors.push(`${at}: clause id ${clause.id} not in appearance order (previous ${previousId})`);
+        }
+        previousId = clause.id;
+        if (!['main', 'coordinated', 'relative', 'adverbial', 'completive', 'participial'].includes(clause.kind)) {
+          errors.push(`${at}: unknown kind "${clause.kind}"`);
+        }
+        let previous = -1;
+        const seen = new Set<number>();
+        for (const index of clause.tokenIndices) {
+          if (index < 0 || index >= tokenCount) {
+            errors.push(`${at}: tokenIndex ${index} out of range`);
+            continue;
+          }
+          if (index <= previous) errors.push(`${at}: tokenIndices not ascending`);
+          previous = index;
+          if (seen.has(index)) errors.push(`${at}: duplicate tokenIndex ${index}`);
+          if (clauseCovered.has(index)) errors.push(`${at}: token ${index} already claimed by another clause`);
+          seen.add(index);
+          clauseCovered.add(index);
+        }
+      });
+      if (sentence.clauses.length > 0 && !(sentence.clauses[0]?.id === 0)) {
+        errors.push(`${where}: main clause must be id 0`);
+      }
+      for (let index = 0; index < tokenCount; index++) {
+        if (!clauseCovered.has(index)) errors.push(`${where}: token ${index} is in no clause`);
+      }
+      // every chunk carries a clauseId referencing an existing clause
+      sentence.order.forEach((chunk, chunkPosition) => {
+        const at = `${where}.order[${chunkPosition}]`;
+        if (chunk.clauseId === undefined) {
+          errors.push(`${at}: chunk without clauseId (sentence has clauses)`);
+        } else if (!clauseIds.has(chunk.clauseId)) {
+          errors.push(`${at}: clauseId ${chunk.clauseId} references no clause`);
+        }
+      });
     }
   });
 

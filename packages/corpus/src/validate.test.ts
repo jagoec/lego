@@ -157,3 +157,182 @@ describe('validatePassage', () => {
     expect(errors).toContain('sentence[0].tokens[0]: form "arma virum" is not a bare word');
   });
 });
+
+describe('validatePassage — v2 clauses and roles', () => {
+  const options = { maxLine: 756, allowedExtraAnalyses: ['que', 've', 'ne'] };
+
+  const withClauses: Passage = {
+    ...validPassage,
+    sentences: [
+      {
+        ...validPassage.sentences[0]!,
+        order: [
+          { order: 1, label: undefined, role: 'predicate', clauseId: 0, tokenIndices: [0, 1] },
+          { order: 2, label: 'verb', role: 'verb', clauseId: 0, tokenIndices: [2] },
+        ],
+        clauses: [
+          { id: 0, kind: 'main', tokenIndices: [0, 1, 2] },
+        ],
+      },
+    ],
+  };
+
+  it('accepts clauses that cover all tokens exactly once with a main clause id 0', () => {
+    expect(validatePassage(withClauses, options)).toEqual([]);
+  });
+
+  it('requires the first clause to be the main clause with id 0', () => {
+    const broken: Passage = {
+      ...withClauses,
+      sentences: [
+        {
+          ...withClauses.sentences[0]!,
+          clauses: [{ id: 1, kind: 'relative', tokenIndices: [0, 1, 2] }],
+        },
+      ],
+    };
+    const errors = validatePassage(broken, options);
+    expect(errors).toContain('sentence[0].clauses[0]: first clause must be the main clause (id 0, kind "main")');
+    expect(errors).toContain('sentence[0]: main clause must be id 0');
+  });
+
+  it('rejects clause token overlap, gaps, out-of-range and non-ascending indices', () => {
+    const broken: Passage = {
+      ...withClauses,
+      sentences: [
+        {
+          ...withClauses.sentences[0]!,
+          clauses: [
+            { id: 0, kind: 'main', tokenIndices: [2, 0] },
+            { id: 1, kind: 'relative', tokenIndices: [1, 1] },
+            { id: 2, kind: 'adverbial', tokenIndices: [9] },
+          ],
+        },
+      ],
+    };
+    const errors = validatePassage(broken, options);
+    expect(errors).toContain('sentence[0].clauses[0]: tokenIndices not ascending');
+    expect(errors).toContain('sentence[0].clauses[1]: duplicate tokenIndex 1');
+    expect(errors).toContain('sentence[0].clauses[2]: tokenIndex 9 out of range');
+  });
+
+  it('requires subordinate clause ids in appearance order', () => {
+    const broken: Passage = {
+      ...withClauses,
+      sentences: [
+        {
+          ...withClauses.sentences[0]!,
+          clauses: [
+            { id: 0, kind: 'main', tokenIndices: [0] },
+            { id: 2, kind: 'relative', tokenIndices: [1] },
+            { id: 1, kind: 'adverbial', tokenIndices: [2] },
+          ],
+        },
+      ],
+    };
+    const errors = validatePassage(broken, options);
+    expect(errors).toContain('sentence[0].clauses[2]: clause id 1 not in appearance order (previous 2)');
+  });
+
+  it('requires every chunk to carry a clauseId referencing an existing clause', () => {
+    const broken: Passage = {
+      ...withClauses,
+      sentences: [
+        {
+          ...withClauses.sentences[0]!,
+          order: [
+            { order: 1, role: 'predicate', clauseId: 0, tokenIndices: [0, 1] },
+            { order: 2, label: 'verb', role: 'verb', clauseId: 5, tokenIndices: [2] },
+          ],
+        },
+      ],
+    };
+    const errors = validatePassage(broken, options);
+    expect(errors).toContain('sentence[0].order[1]: clauseId 5 references no clause');
+
+    const noClauseId: Passage = {
+      ...withClauses,
+      sentences: [
+        {
+          ...withClauses.sentences[0]!,
+          order: [
+            { order: 1, role: 'predicate', clauseId: 0, tokenIndices: [0, 1] },
+            { order: 2, label: 'verb', role: 'verb', tokenIndices: [2] },
+          ],
+        },
+      ],
+    };
+    expect(validatePassage(noClauseId, options)).toContain(
+      'sentence[0].order[1]: chunk without clauseId (sentence has clauses)',
+    );
+  });
+
+  it('rejects unknown roles and unknown clause kinds', () => {
+    const broken: Passage = {
+      ...withClauses,
+      sentences: [
+        {
+          ...withClauses.sentences[0]!,
+          order: [
+            { order: 1, role: 'object' as never, clauseId: 0, tokenIndices: [0, 1] },
+            { order: 2, label: 'verb', role: 'verb', clauseId: 0, tokenIndices: [2] },
+          ],
+          clauses: [{ id: 0, kind: 'gerundial' as never, tokenIndices: [0, 1, 2] }],
+        },
+      ],
+    };
+    const errors = validatePassage(broken, options);
+    expect(errors).toContain('sentence[0].order[0]: unknown role "object"');
+    expect(errors).toContain('sentence[0].clauses[0]: unknown kind "gerundial"');
+  });
+
+  it('validates selected/selectedBy against the analyses map', () => {
+    const good: Passage = {
+      ...withClauses,
+      analyses: { ...withClauses.analyses, cano: [{ pos: 'verb', lemma: 'cano', features: [] }, { pos: 'verb', lemma: 'cano', features: [] }] },
+      sentences: [
+        {
+          ...withClauses.sentences[0]!,
+          tokens: [
+            withClauses.sentences[0]!.tokens[0]!,
+            withClauses.sentences[0]!.tokens[1]!,
+            { index: 2, text: 'cano', form: 'cano', line: 1, selected: 1, selectedBy: 'solver' },
+          ],
+        },
+      ],
+    };
+    expect(validatePassage(good, options)).toEqual([]);
+
+    const outOfRange: Passage = {
+      ...good,
+      sentences: [
+        {
+          ...good.sentences[0]!,
+          tokens: good.sentences[0]!.tokens.map((token, i) =>
+            i === 2 ? { ...token, selected: 5 } : token,
+          ),
+        },
+      ],
+    };
+    expect(validatePassage(outOfRange, options)).toContain(
+      'sentence[0].tokens[2]: selected 5 out of range for 2 analyses',
+    );
+
+    const noProvenance: Passage = {
+      ...good,
+      sentences: [
+        {
+          ...good.sentences[0]!,
+          tokens: good.sentences[0]!.tokens.map((token, i) => {
+            if (i !== 2) return token;
+            const { selectedBy: _drop, ...rest } = token;
+            return rest as typeof token;
+          }),
+        },
+      ],
+    };
+    expect(validatePassage(noProvenance, options)).toContain(
+      'sentence[0].tokens[2]: selected without selectedBy',
+    );
+  });
+});

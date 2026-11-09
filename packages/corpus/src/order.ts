@@ -38,7 +38,7 @@ function triggerOf(analyses: readonly MorpheusAnalysis[]): Trigger | null {
 }
 
 /** A run chunk is labeled subject only if some token is an unambiguous nominative nominal. */
-function isUnambiguousNominative(analyses: readonly MorpheusAnalysis[]): boolean {
+export function isUnambiguousNominative(analyses: readonly MorpheusAnalysis[]): boolean {
   if (analyses.length === 0) return false;
   return analyses.every(
     (a) =>
