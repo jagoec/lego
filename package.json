@@ -1,0 +1,18 @@
+{
+  "name": "lego",
+  "private": true,
+  "version": "0.1.0",
+  "description": "lego (Latin: 'I read') — a friendly interface for reading classical Latin text",
+  "scripts": {
+    "morpheus:up": "docker compose up -d",
+    "morpheus:down": "docker compose down",
+    "dev": "pnpm --parallel --filter @lego/api --filter @lego/web dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "import": "pnpm --filter @lego/corpus import"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,8 @@
+services:
+  morpheus:
+    image: perseidsproject/morpheus-api:v1.0.15
+    container_name: lego-morpheus
+    ports:
+      - "1315:1315"
+    environment:
+      - PORT=1315
